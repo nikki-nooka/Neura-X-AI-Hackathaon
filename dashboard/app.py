@@ -242,6 +242,7 @@ view_mode = st.sidebar.radio(
     "Navigation View:",
     [
         "🌐 3D Digital Twin & Live Network Map",
+        "🛣️ 436-Road AI Intelligence Matrix",
         "🔮 Multi-Horizon Forecasting Studio",
         "🌊 Incident Trigger & Spillback Tracer",
         "🔀 Autonomous Detours & Signal Tuning",
@@ -473,6 +474,278 @@ if view_mode == "🌐 3D Digital Twin & Live Network Map":
             """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ==============================================================================
+# VIEW: 436-Road AI Intelligence Matrix & Live Corridor Grid
+# ==============================================================================
+elif view_mode == "🛣️ 436-Road AI Intelligence Matrix":
+    st.markdown('<div class="hud-card">', unsafe_allow_html=True)
+    st.markdown("### 🛣️ Global 436-Road AI Intelligence Matrix & Live Corridor Grid")
+    st.caption("Continuous network-wide telemetry, multi-horizon AI forecasts (15, 30, 45, 60m), and automated risk scoring across all 436 road segments.")
+
+    # 1. Prepare full 436-road dataset with real baseline + AI forecasts
+    summary_path = _PROJECT_ROOT / "data" / "processed" / "segment_traffic_summary.csv"
+    if summary_path.exists():
+        df_summary = pd.read_csv(summary_path)
+    else:
+        df_summary = pd.DataFrame()
+
+    # Merge network metadata with baseline observations
+    all_436 = network_df.copy()
+    if not df_summary.empty:
+        all_436 = all_436.merge(df_summary, on="segment_id", how="left")
+    
+    # Fill defaults if any missing
+    if "speed_kmh" not in all_436.columns:
+        all_436["speed_kmh"] = all_436["free_flow_speed_kmh"] * 0.85
+    if "flow_vph" not in all_436.columns:
+        all_436["flow_vph"] = all_436["capacity_vph"] * 0.55
+    if "congestion_index" not in all_436.columns:
+        all_436["congestion_index"] = 0.05
+    if "occupancy_pct" not in all_436.columns:
+        all_436["occupancy_pct"] = 18.0
+    if "travel_time_min" not in all_436.columns:
+        all_436["travel_time_min"] = (all_436["length_km"] / all_436["free_flow_speed_kmh"].clip(lower=1.0)) * 60.0
+    if "delay_min" not in all_436.columns:
+        all_436["delay_min"] = 0.2
+    if "queue_length_veh" not in all_436.columns:
+        all_436["queue_length_veh"] = 0.0
+
+    # Vectorized multi-horizon predictions for all 436 segments
+    all_436["timestamp"] = pd.Timestamp.now()
+    preds_436 = forecaster.predict_snapshot(all_436)
+
+    # Attach prediction columns
+    for h in ["15m", "30m", "45m", "60m"]:
+        for t in ["speed", "flow", "congestion"]:
+            col_name = f"pred_{t}_{h}"
+            if col_name in preds_436.columns:
+                all_436[col_name] = preds_436[col_name].values
+
+    # Compute derived AI analytics
+    all_436["speed_ratio"] = (all_436["speed_kmh"] / all_436["free_flow_speed_kmh"].clip(lower=1.0)).round(3)
+    all_436["capacity_util_pct"] = ((all_436["flow_vph"] / all_436["capacity_vph"].clip(lower=100.0)) * 100.0).round(1)
+    
+    # Categorize AI Health Status
+    def get_status(row):
+        ratio = row["speed_ratio"]
+        if ratio > 0.80:
+            return "Free-Flow"
+        elif ratio > 0.55:
+            return "Moderate"
+        elif ratio > 0.35:
+            return "Heavy"
+        else:
+            return "Gridlock"
+
+    all_436["ai_health_status"] = all_436.apply(get_status, axis=1)
+    all_436["ai_risk_score"] = (((1.0 - all_436["speed_ratio"]).clip(lower=0.0) * 0.6 + all_436["congestion_index"] * 0.4) * 100.0).round(1)
+
+    # 2. Executive KPI Header for 436 Roads
+    kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
+    with kpi1:
+        st.metric("Total Network Corridors", "436", "182 Arterials · 254 Collectors")
+    with kpi2:
+        ff_count = (all_436["ai_health_status"] == "Free-Flow").sum()
+        st.metric("Free-Flow Corridors", f"{ff_count} / 436", f"{(ff_count/436)*100:.1f}% Optimal")
+    with kpi3:
+        mod_count = (all_436["ai_health_status"] == "Moderate").sum()
+        st.metric("Moderate Flow", f"{mod_count} / 436", "Watch List")
+    with kpi4:
+        hv_count = (all_436["ai_health_status"].isin(["Heavy", "Gridlock"])).sum()
+        st.metric("Congested / Critical", f"{hv_count} / 436", "Priority Alert" if hv_count > 0 else "0 Active")
+    with kpi5:
+        bn_total = (all_436["structural_bottleneck"] == 1).sum()
+        st.metric("Structural Bottlenecks", f"{bn_total} / 436", "Identified Hotspots")
+
+    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+
+    # 3. Interactive Filter & Search Bar
+    st.markdown("#### 🔍 Filter & Search 436 Corridors")
+    f_col1, f_col2, f_col3, f_col4 = st.columns([1.5, 1, 1, 1])
+    with f_col1:
+        search_query = st.text_input("Search Corridor (e.g. R0001, R0376, N001):", "").strip().upper()
+    with f_col2:
+        sel_road_class = st.selectbox("Road Class:", ["All Classes", "arterial", "collector"])
+    with f_col3:
+        sel_status = st.selectbox("AI Health State:", ["All States", "Free-Flow", "Moderate", "Heavy", "Gridlock"])
+    with f_col4:
+        sel_bn_only = st.checkbox("Structural Bottlenecks Only", value=False)
+
+    # Apply Filters
+    filtered_df = all_436.copy()
+    if search_query:
+        filtered_df = filtered_df[
+            filtered_df["segment_id"].str.contains(search_query) |
+            filtered_df["source_node"].str.contains(search_query) |
+            filtered_df["target_node"].str.contains(search_query)
+        ]
+    if sel_road_class != "All Classes":
+        filtered_df = filtered_df[filtered_df["road_class"] == sel_road_class]
+    if sel_status != "All States":
+        filtered_df = filtered_df[filtered_df["ai_health_status"] == sel_status]
+    if sel_bn_only:
+        filtered_df = filtered_df[filtered_df["structural_bottleneck"] == 1]
+
+    # 4. Visual 436-Tile Micro-Grid Matrix
+    st.markdown("#### 🔲 436-Road AI Status Tile Matrix (Hover or click segment to inspect)")
+    
+    tile_html_chunks = []
+    for _, seg_row in all_436.head(200).iterrows():
+        sid = str(seg_row["segment_id"])
+        stat = str(seg_row["ai_health_status"])
+        spd = float(np.array(seg_row["speed_kmh"]).flatten()[0])
+        lim = float(np.array(seg_row["free_flow_speed_kmh"]).flatten()[0])
+        bg_col = "#22c55e" if stat == "Free-Flow" else ("#fbbf24" if stat == "Moderate" else ("#f97316" if stat == "Heavy" else "#ef4444"))
+        tile_html_chunks.append(
+            f'<div title="{sid} ({seg_row["road_class"]}): {spd:.1f}/{lim:.0f} km/h - {stat}" '
+            f'style="width:28px; height:20px; background:{bg_col}; border-radius:3px; opacity:0.85; '
+            f'display:inline-flex; align-items:center; justify-content:center; font-size:8px; font-weight:800; '
+            f'color:#000; margin:1px; cursor:pointer;">{sid[1:]}</div>'
+        )
+    
+    st.markdown(
+        f'<div style="background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px; line-height:1.2;">'
+        f'{"".join(tile_html_chunks)}'
+        f'<div style="font-size:10px; color:#94a3b8; margin-top:8px;">Showing first 200 tiles (Green = Free-Flow, Yellow = Moderate, Orange = Heavy, Red = Gridlock). Use table below for complete 436-corridor matrix.</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+
+    # 5. Full 436-Road Interactive Telemetry & Forecast Table
+    st.markdown(f"#### 📋 Complete 436 Corridor Intelligence Grid ({len(filtered_df)} corridors matching filter)")
+    
+    display_cols = [
+        "segment_id", "source_node", "target_node", "road_class", "lanes",
+        "free_flow_speed_kmh", "capacity_vph", "speed_kmh", "flow_vph",
+        "pred_speed_15m", "pred_speed_30m", "pred_speed_60m",
+        "pred_congestion_15m", "pred_congestion_60m",
+        "ai_health_status", "ai_risk_score", "structural_bottleneck", "signal_id"
+    ]
+    
+    # Format dataframe for display
+    valid_cols = [c for c in display_cols if c in list(filtered_df.columns)]
+    display_df = pd.DataFrame(filtered_df[valid_cols]).copy()
+    if "speed_kmh" in display_df.columns:
+        display_df["speed_kmh"] = display_df["speed_kmh"].round(1)
+    if "flow_vph" in display_df.columns:
+        display_df["flow_vph"] = display_df["flow_vph"].round(0)
+    if "pred_speed_15m" in display_df.columns:
+        display_df["pred_speed_15m"] = display_df["pred_speed_15m"].round(1)
+    if "pred_speed_30m" in display_df.columns:
+        display_df["pred_speed_30m"] = display_df["pred_speed_30m"].round(1)
+    if "pred_speed_60m" in display_df.columns:
+        display_df["pred_speed_60m"] = display_df["pred_speed_60m"].round(1)
+    if "pred_congestion_15m" in display_df.columns:
+        display_df["pred_congestion_15m"] = display_df["pred_congestion_15m"].round(3)
+    if "pred_congestion_60m" in display_df.columns:
+        display_df["pred_congestion_60m"] = display_df["pred_congestion_60m"].round(3)
+
+    st.dataframe(display_df, height=360, use_container_width=True)
+
+    # 6. 1-Click Corridor Deep Dive AI Inspector
+    st.markdown("---")
+    st.markdown("#### 🔬 1-Click Corridor AI Diagnostic & Advisory Panel")
+    
+    avail_segs = list(filtered_df["segment_id"]) if len(filtered_df) > 0 else list(all_436["segment_id"])
+    sel_inspect_seg = st.selectbox("Select Any Corridor to Run Instant AI Diagnostics:", avail_segs, index=0)
+    
+    inspect_row = all_436[all_436["segment_id"] == sel_inspect_seg].iloc[0]
+    
+    d_col1, d_col2 = st.columns([1.3, 1])
+    
+    with d_col1:
+        st.markdown(f"""
+        <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="color:#38bdf8; margin:0;">Corridor {sel_inspect_seg} ({inspect_row['source_node']} → {inspect_row['target_node']})</h4>
+            <span class="stat-badge {'badge-neon-green' if inspect_row['ai_health_status'] == 'Free-Flow' else ('badge-neon-amber' if inspect_row['ai_health_status'] == 'Moderate' else 'badge-neon-red')}">{inspect_row['ai_health_status']}</span>
+          </div>
+          <div style="font-size:12.5px; color:#cbd5e1; margin:10px 0; line-height:1.7;">
+            • <b>Road Geometry:</b> Class: <code>{inspect_row['road_class'].upper()}</code> | Lanes: <b>{inspect_row['lanes']}</b> | Length: <b>{inspect_row['length_km']} km</b><br>
+            • <b>Capacity & Flow:</b> Capacity: <b>{inspect_row['capacity_vph']} vph</b> | Current Flow: <b>{inspect_row['flow_vph']:.0f} vph</b> ({inspect_row['capacity_util_pct']}%)<br>
+            • <b>Speed Telemetry:</b> Current Speed: <b>{inspect_row['speed_kmh']:.1f} km/h</b> (Free-Flow Limit: {inspect_row['free_flow_speed_kmh']:.1f} km/h)<br>
+            • <b>Bottleneck Priority:</b> <span style="color:{'#f87171' if inspect_row['structural_bottleneck'] == 1 else '#4ade80'}; font-weight:700;">{'YES (Structural Chokepoint)' if inspect_row['structural_bottleneck'] == 1 else 'NO'}</span> | Signal: <code>{inspect_row.get('signal_id', 'Unsignalized')}</code>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Multi-Horizon Forecast Sparkline
+        h_labels = ["Now", "T+15m", "T+30m", "T+60m"]
+        h_vals = [
+            float(inspect_row["speed_kmh"]),
+            float(inspect_row.get("pred_speed_15m", inspect_row["speed_kmh"])),
+            float(inspect_row.get("pred_speed_30m", inspect_row["speed_kmh"])),
+            float(inspect_row.get("pred_speed_60m", inspect_row["speed_kmh"])),
+        ]
+        fig_spark = go.Figure()
+        fig_spark.add_trace(go.Scatter(
+            x=h_labels, y=h_vals, mode="lines+markers+text",
+            text=[f"{v:.1f}" for v in h_vals], textposition="top center",
+            line=dict(color="#38bdf8", width=3),
+            marker=dict(size=7, color="#38bdf8"),
+            fill="tozeroy", fillcolor="rgba(56, 189, 248, 0.08)"
+        ))
+        fig_spark.update_layout(
+            title=f"AI Forecast Trajectory for {sel_inspect_seg} (Speed km/h)",
+            template="plotly_dark",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            height=220,
+            margin=dict(l=20, r=20, t=35, b=20),
+        )
+        st.plotly_chart(fig_spark, use_container_width=True)
+
+    with d_col2:
+        st.markdown(f"""
+        <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(251,191,36,0.25); border-radius:12px; padding:18px;">
+          <h4 style="color:#fbbf24; margin:0 0 10px 0;">⚡ Autonomous AI Actions for {sel_inspect_seg}</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 1-Click Diversion Bypass
+        div_inspect = planner.compute_diversions(str(sel_inspect_seg), k_paths=2)
+        rec_routes = div_inspect.get("recommended_routes", [])
+        if rec_routes:
+            best_detour = rec_routes[0]
+            st.markdown(f"""
+            <div style="background:rgba(34,197,94,0.06); border-left:3px solid #22c55e; border-radius:8px; padding:10px; margin-top:10px; font-size:12px;">
+              <b>🔀 Recommended AI Bypass Detour:</b><br>
+              Route: <code>{' → '.join(best_detour['path_nodes'])}</code><br>
+              Distance: <b>{best_detour['distance_km']} km</b> | Est. Time: <b>{best_detour['estimated_time_min']} min</b> | Spare Cap: <b>{best_detour['bottleneck_spare_capacity_vph']} vph</b>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.info("Direct corridor optimal — no bypass needed.")
+
+        # 1-Click Signal Retiming Plan
+        sig_inspect = signal_opt.optimize_signal_for_corridor(
+            str(inspect_row["source_node"]),
+            congestion_level=str(inspect_row["ai_health_status"]).upper(),
+            queue_length_veh=float(inspect_row["queue_length_veh"]),
+        )
+        if sig_inspect.get("has_signal"):
+            st.markdown(f"""
+            <div style="background:rgba(56,189,248,0.06); border-left:3px solid #38bdf8; border-radius:8px; padding:10px; margin-top:10px; font-size:12px;">
+              <b>🚦 Adaptive Signal Advisory @ {sig_inspect['node_id']}:</b><br>
+              Action: <b>{sig_inspect['action']}</b> (Green: {sig_inspect['base_green_ratio']:.2f} → {sig_inspect['target_green_ratio']:.2f})<br>
+              Throughput Impact: <b>+{sig_inspect['est_throughput_gain_pct']}%</b>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # 7. CSV Export
+    st.markdown("---")
+    csv_data = all_436.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="📥 Export Complete 436-Road AI Intelligence Dataset (CSV)",
+        data=csv_data,
+        file_name="neurax_436_road_ai_intelligence_matrix.csv",
+        mime="text/csv",
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ==============================================================================
