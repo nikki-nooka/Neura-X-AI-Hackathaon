@@ -159,15 +159,16 @@ Rather than training 12 disconnected models, we structure multi-horizon predicti
   $$\mathbf{z} = [v_t, q_t, o_t, t_t, d_t, k_t, CI_t, h_t, \text{dow}_t, \text{is\_wknd}_t, n_e, v_e^{ff}, C_e, \text{imp}_e, \text{rain}_t, \text{event}_t, \text{work}_t, \frac{v_t}{v_e^{ff}}, \frac{q_t}{C_e}]$$
 
 #### Empirical Validation Metrics:
-| Target | Horizon | Train MAE | Train RMSE | Performance Interpretation |
-|---|:---:|:---:|:---:|---|
-| **Speed** | 15 min | **0.086 km/h** | 0.146 km/h | Near-lossless short-term tracking |
-| **Speed** | 30 min | **0.088 km/h** | 0.152 km/h | High trajectory stability |
-| **Speed** | 45 min | **0.093 km/h** | 0.156 km/h | Accurate deceleration capture |
-| **Speed** | 60 min | **0.097 km/h** | 0.167 km/h | Long-term macro-trend preservation |
-| **Flow** | 15 min | **119.4 vph** | 158.5 vph | < 6% error relative to link capacity |
-| **Flow** | 60 min | **119.9 vph** | 159.8 vph | Robust against peak-hour oscillations |
-| **Congestion Index** | 15–60 min | **0.002** | 0.003–0.004 | Exact bottleneck onset classification |
+Evaluated on **100,000 held-out validation records** with strict `timestamp + segment_id` alignment (protecting against row-order shuffling):
+
+| Target | Horizon | Val MAE (Out-of-Sample) | Val RMSE | Train MAE (In-Sample) | Performance Interpretation |
+|---|:---:|:---:|:---:|:---:|---|
+| **Speed** | 15 min | **1.37 km/h** | 2.47 km/h | 0.086 km/h | Strong generalizability across dynamic conditions |
+| **Speed** | 30 min | **1.42 km/h** | 2.56 km/h | 0.088 km/h | High trajectory stability without error accumulation |
+| **Speed** | 45 min | **1.50 km/h** | 2.68 km/h | 0.093 km/h | Accurately tracks deceleration onset |
+| **Speed** | 60 min | **1.45 km/h** | 2.59 km/h | 0.097 km/h | Preserves long-term macro arterial flow |
+| **Congestion Index** | 15–60 min | **0.033** | 0.059–0.063 | 0.002 | Highly reliable bottleneck boundary detection |
+
 
 ---
 
