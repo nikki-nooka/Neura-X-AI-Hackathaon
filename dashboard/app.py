@@ -385,74 +385,122 @@ if view_mode == "🌐 3D Digital Twin & Live Network Map":
 
     with col_map:
         st.markdown('<div class="hud-card">', unsafe_allow_html=True)
-        st.markdown("#### 🗺️ 3D Hyderabad Urban Corridors Digital Twin")
+        st.markdown("#### 🗺️ Hyderabad Urban Corridors Digital Twin")
         
-        map_layer_type = st.radio(
-            "Visual Layer Mode:",
-            ["🚗 3D Glowing Corridors", "🔥 Traffic Density Heatmap", "🌐 Multi-Layer Synchronized View"],
-            horizontal=True,
-        )
+        map_tab1, map_tab2 = st.tabs(["🏙️ 3D Perspective Digital Twin", "🗺️ High-Detail City Street Map"])
 
-        view_state = pdk.ViewState(
-            latitude=float(nodes_df["lat"].mean()),
-            longitude=float(nodes_df["lon"].mean()),
-            zoom=12.1,
-            pitch=42,
-            bearing=-15,
-        )
-
-        layers = []
-
-        if "3D Glowing Corridors" in map_layer_type or "Multi-Layer" in map_layer_type:
-            line_layer = pdk.Layer(
-                "LineLayer",
-                data=df_edges,
-                get_source_position="source",
-                get_target_position="target",
-                get_color="color",
-                get_width="lanes * 3.2",
-                pickable=True,
-                auto_highlight=True,
+        with map_tab1:
+            map_layer_type = st.radio(
+                "Visual Layer Mode:",
+                ["🚗 3D Glowing Corridors", "🔥 Traffic Density Heatmap", "🌐 Multi-Layer Synchronized View"],
+                horizontal=True,
             )
-            layers.append(line_layer)
 
-            node_layer = pdk.Layer(
-                "ScatterplotLayer",
-                data=nodes_df,
-                get_position="[lon, lat, 5]",
-                get_color="[56, 189, 248, 180]",
-                get_radius=55,
-                pickable=True,
+            view_state = pdk.ViewState(
+                latitude=float(nodes_df["lat"].mean()),
+                longitude=float(nodes_df["lon"].mean()),
+                zoom=12.1,
+                pitch=42,
+                bearing=-15,
             )
-            layers.append(node_layer)
 
-        if "Heatmap" in map_layer_type or "Multi-Layer" in map_layer_type:
-            heat_layer = pdk.Layer(
-                "HeatmapLayer",
-                data=df_heat,
-                get_position="[lon, lat]",
-                get_weight="weight",
-                radiusPixels=50,
-                threshold=0.1,
+            layers = []
+
+            if "3D Glowing Corridors" in map_layer_type or "Multi-Layer" in map_layer_type:
+                line_layer = pdk.Layer(
+                    "LineLayer",
+                    data=df_edges,
+                    get_source_position="source",
+                    get_target_position="target",
+                    get_color="color",
+                    get_width="lanes * 3.2",
+                    pickable=True,
+                    auto_highlight=True,
+                )
+                layers.append(line_layer)
+
+                node_layer = pdk.Layer(
+                    "ScatterplotLayer",
+                    data=nodes_df,
+                    get_position="[lon, lat, 5]",
+                    get_color="[56, 189, 248, 180]",
+                    get_radius=55,
+                    pickable=True,
+                )
+                layers.append(node_layer)
+
+            if "Heatmap" in map_layer_type or "Multi-Layer" in map_layer_type:
+                heat_layer = pdk.Layer(
+                    "HeatmapLayer",
+                    data=df_heat,
+                    get_position="[lon, lat]",
+                    get_weight="weight",
+                    radiusPixels=50,
+                    threshold=0.1,
+                )
+                layers.append(heat_layer)
+
+            deck = pdk.Deck(
+                layers=layers,
+                initial_view_state=view_state,
+                map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+                tooltip={
+                    "html": """
+                    <div style="font-family:sans-serif; font-size:12px; padding:6px; background:#0f172a; color:#f8fafc; border-radius:6px; border:1px solid #38bdf8;">
+                      <b>Segment: {segment_id}</b> ({road_class})<br>
+                      Speed: <span style="color:#38bdf8;"><b>{speed_kmh} km/h</b></span> (Limit: {free_flow_speed_kmh} km/h)<br>
+                      Capacity: {capacity_vph} vph | Status: <b>{status}</b><br>
+                      Bottleneck: <span style="color:#f87171;">{is_bottleneck}</span>
+                    </div>
+                    """,
+                },
             )
-            layers.append(heat_layer)
+            st.pydeck_chart(deck, use_container_width=True, height=480)
 
-        deck = pdk.Deck(
-            layers=layers,
-            initial_view_state=view_state,
-            map_style="dark",
-            tooltip={
-                "html": """
-                <div style="font-family:sans-serif; font-size:12px; padding:6px; background:#0f172a; color:#f8fafc; border-radius:6px; border:1px solid #38bdf8;">
-                  <b>Segment: {segment_id}</b> ({road_class})<br>
-                  Speed: <span style="color:#38bdf8;"><b>{speed_kmh} km/h</b></span> (Limit: {free_flow_speed_kmh} km/h)<br>
-                  Capacity: {capacity_vph} vph | Status: <b>{status}</b><br>
-                  Bottleneck: <span style="color:#f87171;">{is_bottleneck}</span>
-                </div>
-                """,
-            },
-        )
-        st.pydeck_chart(deck, use_container_width=True, height=520)
+        with map_tab2:
+            fig_map = go.Figure()
+            
+            # Add road segments as lines
+            for _, e_row in df_edges.iterrows():
+                src_pt = e_row["source"]
+                tgt_pt = e_row["target"]
+                c_rgb = f"rgb({e_row['color'][0]},{e_row['color'][1]},{e_row['color'][2]})"
+                fig_map.add_trace(go.Scattermap(
+                    lon=[src_pt[0], tgt_pt[0]],
+                    lat=[src_pt[1], tgt_pt[1]],
+                    mode="lines",
+                    line=dict(width=e_row["lanes"] * 2.2, color=c_rgb),
+                    hoverinfo="text",
+                    text=f"<b>Segment {e_row['segment_id']}</b><br>Speed: {e_row['speed_kmh']}/{e_row['free_flow_speed_kmh']} km/h<br>Status: {e_row['status']}<br>Class: {e_row['road_class']}",
+                    showlegend=False,
+                ))
+
+            # Add nodes
+            fig_map.add_trace(go.Scattermap(
+                lon=nodes_df["lon"],
+                lat=nodes_df["lat"],
+                mode="markers",
+                marker=dict(size=6, color="#38bdf8"),
+                text=nodes_df["node_id"],
+                hoverinfo="text",
+                name="Junctions",
+            ))
+
+            mean_lat = float(np.mean(nodes_df["lat"]))
+            mean_lon = float(np.mean(nodes_df["lon"]))
+
+            fig_map.update_layout(
+                map=dict(
+                    style="carto-darkmatter",
+                    center=dict(lat=mean_lat, lon=mean_lon),
+                    zoom=11.8,
+                ),
+                margin=dict(l=0, r=0, t=0, b=0),
+                height=480,
+                paper_bgcolor="rgba(0,0,0,0)",
+            )
+            st.plotly_chart(fig_map, use_container_width=True)
+
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_details:
