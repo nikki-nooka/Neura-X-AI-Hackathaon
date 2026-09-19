@@ -101,83 +101,67 @@ The dataset contains **6 types of realistic sensor noise** that must be handled:
 
 ```mermaid
 flowchart TD
-    %% Global Styling Classes
-    classDef rawNode fill:#0f172a,stroke:#334155,stroke-width:1.5px,color:#f8fafc,rx:8px,ry:8px;
-    classDef s1Node fill:#1e1b4b,stroke:#6366f1,stroke-width:1.5px,color:#e0e7ff,rx:8px,ry:8px;
-    classDef s2Node fill:#3b0764,stroke:#c084fc,stroke-width:1.5px,color:#fae8ff,rx:8px,ry:8px;
-    classDef s3Node fill:#082f49,stroke:#38bdf8,stroke-width:1.5px,color:#e0f2fe,rx:8px,ry:8px;
-    classDef s4Node fill:#064e3b,stroke:#34d399,stroke-width:1.5px,color:#ecfdf5,rx:8px,ry:8px;
-    classDef s5Node fill:#451a03,stroke:#fbbf24,stroke-width:1.5px,color:#fef3c7,rx:8px,ry:8px;
-    classDef outNode fill:#18181b,stroke:#0ea5e9,stroke-width:2px,color:#ffffff,rx:10px,ry:10px;
-
-    subgraph L0 ["📦 LAYER 0 · MULTI-MODAL DATA INGESTION (1.88M Records · 10 Datasets)"]
-        direction LR
-        D1["📊 <b>Sensor Telemetry</b><br/><code>traffic_train.csv</code><br/><i>1.88M rows · 5-min cadence</i>"]:::rawNode
-        D2["🗺️ <b>Network Topology</b><br/><code>network.csv</code> · <code>nodes.csv</code><br/><i>436 edges · 120 junctions</i>"]:::rawNode
-        D3["🚦 <b>Controls & OD Demand</b><br/><code>signals.csv</code> · <code>od_demand.csv</code><br/><i>89 signal plans · 1,500 OD pairs</i>"]:::rawNode
-        D4["🌧️ <b>Dynamic Context</b><br/><code>incidents.csv</code> · <code>context.csv</code><br/><i>49 incidents · weather & roadworks</i>"]:::rawNode
+    subgraph S0["1. RAW DATA INGESTION"]
+        D1["traffic_train.csv (1.88M Sensor Rows)"]
+        D2["network.csv & nodes.csv (436 Links, 120 Nodes)"]
+        D3["signals.csv & turns.csv (Signal Plans & Turn Restrictions)"]
+        D4["context.csv & incidents.csv (Weather & Labeled Incidents)"]
+        D5["od_demand.csv & planning_candidates.csv (OD Pairs & 90 Projects)"]
     end
 
-    subgraph L1 ["🧹 LAYER 1 · DATA CLEANSING & SPATIAL GRAPH PIPELINE (src/ingestion/)"]
-        direction LR
-        C1["<b>Data Cleanser</b><br/><code>cleaner.py</code><br/>• Fixes 6 noise types & duplicates<br/>• 4σ rolling spike filter & ffill"]:::s1Node
-        C2["<b>Graph Builder</b><br/><code>graph_builder.py</code><br/>• NetworkX directed road topology<br/>• Signal phases & turn constraints"]:::s1Node
-        C3["<b>Feature Fusion</b><br/><code>feature_eng.py</code><br/>• Spatio-temporal lag matrix<br/>• Rolling statistics & weather joins"]:::s1Node
+    subgraph S1["2. INGESTION & DATA CLEANING (src/ingestion)"]
+        C1["cleaner.py - 6-Noise Cleanser (Spikes, Duplicates, Stuck Sensors)"]
+        C2["graph_builder.py - NetworkX Road Topology & Capacities"]
+        C3["feature_eng.py - Spatio-Temporal Lags & Context Features"]
         C1 --> C2 --> C3
     end
 
-    subgraph L2 ["🚦 LAYER 2 · REAL-TIME NETWORK STATE ENGINE (src/state_engine/)"]
-        direction LR
-        S1["<b>Congestion Tracker</b><br/><code>congestion_tracker.py</code><br/>• 4-tier status (Free to Gridlock)<br/>• Real-time TTI & queue length"]:::s2Node
-        S2["<b>Incident & Anomaly Detector</b><br/><code>anomaly_detector.py</code><br/>• 3σ baseline deviation engine<br/>• Random Forest incident classifier"]:::s2Node
-        S3["<b>Spillback Causal Tracer</b><br/><code>spillback_tracer.py</code><br/>• BFS backward queue propagation<br/>• Causal delay chain with ETA"]:::s2Node
-        S1 --> S2 --> S3
+    subgraph S2["3. REAL-TIME NETWORK STATE ENGINE (src/state_engine)"]
+        T1["congestion_tracker.py - 4-Tier Congestion Classification"]
+        T2["anomaly_detector.py - 3-Sigma Anomaly & Incident Classifier"]
+        T3["spillback_tracer.py - BFS Backward Queue Spillback Propagation"]
+        T1 --> T2 --> T3
     end
 
-    subgraph L3 ["🔮 LAYER 3 · MULTI-HORIZON PREDICTIVE FORECASTING (src/forecasting/)"]
-        direction LR
-        F1["<b>LightGBM Regressor</b><br/><code>lightgbm_baseline.py</code><br/><i>Fast tabular gradient boosting</i>"]:::s3Node
-        F2["<b>Spatial-Temporal GNN</b><br/><code>stgnn_model.py</code><br/><i>Graph attention cross-segment</i>"]:::s3Node
-        F3["<b>Weighted Blended Ensemble</b><br/><code>ensemble.py</code><br/><b>Targets:</b> Speed, Flow, Congestion @ 15, 30, 45, 60 min"]:::s3Node
+    subgraph S3["4. MULTI-HORIZON FORECASTING (src/forecasting)"]
+        F1["lightgbm_baseline.py - Tabular Gradient Boosting"]
+        F2["stgnn_model.py - Spatial-Temporal Graph Neural Network"]
+        F3["ensemble.py - Blended Forecasts (15, 30, 45, 60 min)"]
         F1 --> F3
         F2 --> F3
     end
 
-    subgraph INTERVENTIONS ["⚡ ADAPTIVE INTERVENTION & PLANNING ENGINES"]
-        direction LR
-        subgraph L4 ["🎯 LAYER 4 · TACTICAL ADVISORY<br/><i>(Real-Time Traffic Control)</i>"]
-            direction TB
-            A1["<b>K-Shortest Path Router</b><br/><code>diversion_planner.py</code><br/>• Dynamic rerouting with spare capacity"]:::s4Node
-            A2["<b>Adaptive Signal Optimizer</b><br/><code>signal_optimizer.py</code><br/>• Dynamic green-split adjustment"]:::s4Node
-            A3["<b>AI Operator Briefings</b><br/><code>briefing_generator.py</code><br/>• Groq Llama 3.3 in EN / HI / TE"]:::s4Node
+    subgraph S4["5. DECISION & INTERVENTION ENGINES"]
+        subgraph S4A["Tactical Advisory Engine (src/advisory)"]
+            A1["diversion_planner.py - K-Shortest Path Rerouting"]
+            A2["signal_optimizer.py - Dynamic Green Split Tuning"]
+            A3["briefing_generator.py - Groq Llama 3.3 LLM Briefings"]
             A1 --> A2 --> A3
         end
 
-        subgraph L5 ["🏗️ LAYER 5 · STRATEGIC PLANNING<br/><i>(Long-Term Infrastructure Investment)</i>"]
-            direction TB
-            I1["<b>Bottleneck Detector</b><br/><code>bottleneck_detector.py</code><br/>• Persistent recurring choke-points"]:::s5Node
-            I2["<b>Counterfactual Simulator</b><br/><code>intervention_simulator.py</code><br/>• Before/after what-if flow replay"]:::s5Node
-            I3["<b>Cost-Benefit Ranker</b><br/><code>cost_benefit_analyzer.py</code><br/>• ROI ranking across 90 candidates"]:::s5Node
+        subgraph S4B["Strategic Infrastructure Engine (src/infrastructure)"]
+            I1["bottleneck_detector.py - Recurring Choke-Point Detection"]
+            I2["intervention_simulator.py - Before/After What-If Counterfactuals"]
+            I3["cost_benefit_analyzer.py - 90 Upgrade Candidates ROI Ranking"]
             I1 --> I2 --> I3
         end
     end
 
-    subgraph L6 ["🖥️ LAYER 6 · UNIFIED COMMAND CENTER UI (dashboard/app.py)"]
-        direction LR
-        O1["🗺️ <b>Live GIS Map</b><br/><i>Folium & 3D Deck.gl View</i>"]:::outNode
-        O2["🎮 <b>What-If Console</b><br/><i>Live incident & upgrade injector</i>"]:::outNode
-        O3["🚨 <b>Incident Feed</b><br/><i>Spillback alerts & diversion orders</i>"]:::outNode
-        O4["📋 <b>Action Briefings</b><br/><i>One-click officer reports in 3 languages</i>"]:::outNode
+    subgraph S5["6. OPERATOR COMMAND CENTER (dashboard/app.py)"]
+        O1["Live 2D/3D Geospatial Map & Elevation View"]
+        O2["Interactive What-If Scenario Console"]
+        O3["Real-Time Incident Alert & Spillback Feed"]
+        O4["Multi-Lingual Situation Reports (EN / HI / TE)"]
     end
 
-    %% Hierarchical Connectors
-    L0 -->|Stream Observation Batches| L1
-    L1 -->|Clean Network Graph & Features| L2
-    L2 -->|Current Network State & Anomalies| L3
-    L3 -->|Short-Horizon Speed/Flow Predictions| L4
-    L3 -->|Long-Term Recurrent Congestion Patterns| L5
-    L4 -->|Active Tactical Advisories| L6
-    L5 -->|Ranked Infrastructure Interventions| L6
+    %% Hierarchical Pipeline Flow
+    S0 --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4A
+    S3 --> S4B
+    S4A --> S5
+    S4B --> S5
 ```
 
 ### Project Structure
