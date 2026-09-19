@@ -166,7 +166,7 @@ flowchart TD
 
 ```
 hack-in/
-├── NEURAX_SMART_CITIES_TRAINING_V2/   # 📡 Organizer-provided raw dataset
+├── NEURAX_SMART_CITIES_TRAINING_V2/   # Organizer-provided raw dataset
 ├── data/
 │   ├── raw/                           # Ingested data copies
 │   └── processed/                     # Cleaned CSVs, graph pickle, features
