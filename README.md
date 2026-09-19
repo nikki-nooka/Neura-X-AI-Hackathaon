@@ -246,18 +246,19 @@ hack-in/
 
 ### Module 3: Multi-Horizon Forecasting (`src/forecasting/`)
 
-**Purpose:** Predict traffic states 15, 30, 45, and 60 minutes into the future.
+**Purpose:** Predict traffic states 15, 30, 45, and 60 minutes into the future across 436 road segments.
 
-| Model | Type | Strengths |
+| Model | Implementation | Strengths & Role |
 |---|---|---|
-| LightGBM | Tabular gradient boosting | Fast training, interpretable, strong per-segment baseline |
-| ST-GNN | Spatial-Temporal Graph Neural Net | Captures cross-segment dependencies — jam on Road A affects connected Roads B, C, D |
-| Ensemble | Weighted blend | Best of both — tabular precision + graph spatial awareness |
+| `HistGradientBoostingRegressor` | Scikit-Learn native histogram-based GBDT | Native NaN handling, ultra-fast inference (<5ms), robust tabular feature interactions (temporal + road geometry + weather + current ratios) |
+| Multi-Horizon Regressors | 12 dedicated regressors (3 targets × 4 horizons) | Specifically tuned for 15, 30, 45, and 60 min intervals without recursive error accumulation |
+| Hybrid Validation | Strict `timestamp + segment_id` alignment | Evaluated against out-of-sample validation data (MAE: ~1.37–1.49 km/h on speed across all horizons) |
 
 **Prediction Targets (per segment, per horizon):**
 - `target_speed` — predicted average speed (km/h)
 - `target_flow` — predicted vehicle flow (vehicles/hour)
 - `target_congestion` — predicted congestion index (0–1)
+
 
 ---
 

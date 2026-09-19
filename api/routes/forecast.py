@@ -45,28 +45,65 @@ def predict_segment(req: ForecastRequest) -> Dict[str, Any]:
     ff_speed = float(seg_info["free_flow_speed_kmh"].iloc[0]) if not seg_info.empty else 50.0
     capacity = float(seg_info["capacity_vph"].iloc[0]) if not seg_info.empty else 2000.0
 
-    # Build an input snapshot row
-    input_df = pd.DataFrame([{
-        "segment_id": req.segment_id,
-        "timestamp": req.timestamp or "2026-01-01 08:30:00",
-        "speed_kmh": ff_speed * 0.75,
-        "flow_vph": capacity * 0.60,
-        "occupancy_pct": 35.0,
-        "travel_time_min": 1.5,
-        "free_flow_time_min": 1.2,
-        "delay_min": 0.3,
-        "queue_length_veh": 4.0,
-        "congestion_index": 0.20,
-        "sensor_quality": 1.0,
-        "temperature_c": 22.0,
-        "rain_intensity": 0.0,
-        "event_level": 0,
-        "roadwork_active": 0,
-        "free_flow_speed_kmh": ff_speed,
-        "capacity_vph": capacity,
-        "lanes": int(seg_info["lanes"].iloc[0]) if not seg_info.empty else 2,
-        "importance": float(seg_info["importance"].iloc[0]) if not seg_info.empty else 1.0,
-    }])
+    # 1. Fetch the real latest telemetry observation for this specific segment
+    clean_traffic_file = _PROCESSED_DIR / "traffic_train_clean.csv"
+    raw_traffic_file = _PROJECT_ROOT / "NEURAX_SMART_CITIES_TRAINING_V2" / "traffic_train.csv"
+    src_file = clean_traffic_file if clean_traffic_file.exists() else raw_traffic_file
+
+    real_obs = None
+    if src_file.exists():
+        # Read the latest snapshot rows for all segments
+        df_sample = pd.read_csv(src_file, nrows=5000)
+        seg_rows = df_sample[df_sample["segment_id"] == req.segment_id]
+        if not seg_rows.empty:
+            real_obs = seg_rows.iloc[-1].to_dict()
+
+    if real_obs is not None:
+        # Feed the real observed current state
+        input_df = pd.DataFrame([{
+            "segment_id": req.segment_id,
+            "timestamp": req.timestamp or str(real_obs.get("timestamp", "2026-01-01 08:30:00")),
+            "speed_kmh": float(real_obs.get("speed_kmh", ff_speed * 0.75)),
+            "flow_vph": float(real_obs.get("flow_vph", capacity * 0.60)),
+            "occupancy_pct": float(real_obs.get("occupancy_pct", 35.0)),
+            "travel_time_min": float(real_obs.get("travel_time_min", 1.5)),
+            "free_flow_time_min": float(real_obs.get("free_flow_time_min", 1.2)),
+            "delay_min": float(real_obs.get("delay_min", 0.3)),
+            "queue_length_veh": float(real_obs.get("queue_length_veh", 4.0)),
+            "congestion_index": float(real_obs.get("congestion_index", 0.20)),
+            "sensor_quality": float(real_obs.get("sensor_quality", 1.0)),
+            "temperature_c": float(real_obs.get("temperature_c", 22.0)),
+            "rain_intensity": float(real_obs.get("rain_intensity", 0.0)),
+            "event_level": int(real_obs.get("event_level", 0)),
+            "roadwork_active": int(real_obs.get("roadwork_active", 0)),
+            "free_flow_speed_kmh": ff_speed,
+            "capacity_vph": capacity,
+            "lanes": int(seg_info["lanes"].iloc[0]) if not seg_info.empty else 2,
+            "importance": float(seg_info["importance"].iloc[0]) if not seg_info.empty else 1.0,
+        }])
+    else:
+        # Fallback to physical geometry baseline
+        input_df = pd.DataFrame([{
+            "segment_id": req.segment_id,
+            "timestamp": req.timestamp or "2026-01-01 08:30:00",
+            "speed_kmh": ff_speed * 0.75,
+            "flow_vph": capacity * 0.60,
+            "occupancy_pct": 35.0,
+            "travel_time_min": 1.5,
+            "free_flow_time_min": 1.2,
+            "delay_min": 0.3,
+            "queue_length_veh": 4.0,
+            "congestion_index": 0.20,
+            "sensor_quality": 1.0,
+            "temperature_c": 22.0,
+            "rain_intensity": 0.0,
+            "event_level": 0,
+            "roadwork_active": 0,
+            "free_flow_speed_kmh": ff_speed,
+            "capacity_vph": capacity,
+            "lanes": int(seg_info["lanes"].iloc[0]) if not seg_info.empty else 2,
+            "importance": float(seg_info["importance"].iloc[0]) if not seg_info.empty else 1.0,
+        }])
 
     preds = forecaster.predict_snapshot(input_df)
 

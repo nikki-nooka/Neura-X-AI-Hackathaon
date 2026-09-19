@@ -121,7 +121,7 @@ All at **5-minute resolution** over **15 training days + 4 validation days** (8 
 |---|---|
 | Language | Python 3.10+ |
 | Graph & Network | NetworkX, OSMnx |
-| ML / Forecasting | LightGBM, PyTorch (ST-GNN) |
+| ML / Forecasting | Scikit-Learn (`HistGradientBoostingRegressor`, `RandomForestClassifier`) |
 | Data Processing | Pandas, NumPy, SciPy |
 | Geospatial | GeoPandas, Shapely, Folium |
 | Dashboard | Streamlit + Plotly |
