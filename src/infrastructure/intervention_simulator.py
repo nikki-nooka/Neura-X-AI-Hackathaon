@@ -34,20 +34,19 @@ class InterventionSimulator:
         self._load_traffic_summary()
 
     def _load_traffic_summary(self) -> None:
-        """Compute average peak-hour speed and flow per segment for realistic baseline."""
-        clean_file = _PROCESSED_DIR / "traffic_train_clean.csv"
-        raw_file = _DATA_DIR / "traffic_train.csv"
-        src_file = clean_file if clean_file.exists() else raw_file
-        
-        # Load sample or summary
-        df = pd.read_csv(src_file, nrows=100000)
-        self.traffic_summary = df.groupby("segment_id").agg({
-            "speed_kmh": "mean",
-            "flow_vph": "mean",
-            "delay_min": "mean",
-            "queue_length_veh": "mean",
-            "congestion_index": "mean",
-        }).reset_index()
+        """Load aggregated historical baseline speed and flow per segment across full 1.88M dataset."""
+        summary_file = _PROCESSED_DIR / "segment_traffic_summary.csv"
+        if summary_file.exists():
+            self.traffic_summary = pd.read_csv(summary_file)
+        else:
+            clean_file = _PROCESSED_DIR / "traffic_train_clean.csv"
+            raw_file = _DATA_DIR / "traffic_train.csv"
+            src_file = clean_file if clean_file.exists() else raw_file
+            
+            df = pd.read_csv(src_file, usecols=["segment_id", "speed_kmh", "flow_vph", "delay_min", "queue_length_veh", "congestion_index"])
+            grouped = df.groupby("segment_id").mean()
+            self.traffic_summary = pd.DataFrame(grouped).reset_index()
+            self.traffic_summary.to_csv(summary_file, index=False)
 
     def simulate_candidate(self, candidate_id: str) -> dict[str, Any]:
         """Simulate a single planning candidate upgrade against baseline conditions."""

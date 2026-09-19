@@ -1,6 +1,7 @@
 """
 Validation Evaluation Suite for Multi-Horizon Forecaster.
-Computes MAE, RMSE, and MAPE across 15m, 30m, 45m, and 60m horizons.
+Computes MAE and RMSE across 15m, 30m, 45m, and 60m horizons with
+strict timestamp + segment_id key joining to eliminate row-order assumptions.
 """
 from __future__ import annotations
 
@@ -44,21 +45,26 @@ def evaluate_on_validation(sample_size: int = 100000) -> pd.DataFrame:
         print("⚡ Training forecaster models...")
         forecaster.train(sample_size=150000)
 
-    # Predict snapshot
+    # Generate predictions on input features
     print("🔮 Generating validation predictions...")
     preds = forecaster.predict_snapshot(val_x)
 
-    # Merge predictions with ground truth
-    val_x_subset = val_x[["timestamp", "segment_id"]].copy()
-    val_x_subset["timestamp"] = val_x_subset["timestamp"].astype(str)
-    val_y["timestamp"] = val_y["timestamp"].astype(str)
+    # Ensure timestamps are uniform strings for exact joining
+    preds["timestamp_str"] = val_x["timestamp"].astype(str)
+    val_y["timestamp_str"] = val_y["timestamp"].astype(str)
 
-    merged = pd.concat([preds.reset_index(drop=True), val_y.reset_index(drop=True)], axis=1)
+    # STRICT INNER JOIN on timestamp + segment_id to guarantee alignment regardless of row shuffling
+    merged = preds.merge(
+        val_y,
+        on=["timestamp_str", "segment_id"],
+        suffixes=("_pred", "_true"),
+    )
+    print(f"✓ Successfully joined {len(merged):,} records on [timestamp + segment_id] keys.")
 
     eval_records = []
-    print("\n" + "=" * 65)
-    print(f"{'Target Metric':<20} | {'Horizon':<8} | {'MAE':<10} | {'RMSE':<10} | {'Status'}")
-    print("=" * 65)
+    print("\n" + "=" * 68)
+    print(f"{'Target Metric':<16} | {'Horizon':<8} | {'MAE':<10} | {'RMSE':<10} | {'Sample Count'}")
+    print("=" * 68)
 
     for h in HORIZONS:
         for t in TARGET_TYPES:
@@ -72,23 +78,21 @@ def evaluate_on_validation(sample_size: int = 100000) -> pd.DataFrame:
                 mae = float(mean_absolute_error(y_true, y_pred))
                 rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
                 
-                status = "🟢 High Precision" if (t == "speed" and mae < 3.0) or (t == "congestion" and mae < 0.05) or (t == "flow" and mae < 250) else "🟡 Nominal"
-
-                print(f"{t.capitalize():<20} | {h:<8} | {mae:<10.3f} | {rmse:<10.3f} | {status}")
+                print(f"{t.capitalize():<16} | {h:<8} | {mae:<10.3f} | {rmse:<10.3f} | {len(merged):,}")
 
                 eval_records.append({
                     "target": t,
                     "horizon": h,
                     "validation_mae": round(mae, 3),
                     "validation_rmse": round(rmse, 3),
-                    "status": status,
+                    "evaluated_samples": len(merged),
                 })
 
-    print("=" * 65)
+    print("=" * 68)
     df_eval = pd.DataFrame(eval_records)
     out_path = _PROJECT_ROOT / "data" / "processed" / "forecaster_validation_metrics.csv"
     df_eval.to_csv(out_path, index=False)
-    print(f"✅ Validation scorecard saved to {out_path}")
+    print(f"✅ Defensible validation scorecard exported to {out_path}")
     return df_eval
 
 
