@@ -175,8 +175,8 @@ def detect_incident_signatures(
     df["flow_drop"] = df["flow_dev"] < -flow_drop_pct
     df["queue_spike"] = df["queue_ratio"] > queue_spike_mult
 
-    # All three co-occurring
-    df["sig_flag"] = df["speed_drop"] & df["flow_drop"] & df["queue_spike"]
+    # Incident co-occurrence: significant speed drop paired with flow drop or queue spike
+    df["sig_flag"] = df["speed_drop"] & (df["flow_drop"] | df["queue_spike"])
 
     # Group consecutive flagged readings into windows per segment
     results = []
