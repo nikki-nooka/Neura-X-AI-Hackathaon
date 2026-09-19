@@ -47,6 +47,12 @@ class CityKPIsModel(BaseModel):
 class ForecastRequest(BaseModel):
     segment_id: str
     timestamp: Optional[str] = None
+    speed_kmh: Optional[float] = None
+    flow_vph: Optional[float] = None
+    occupancy_pct: Optional[float] = None
+    queue_length_veh: Optional[float] = None
+    congestion_index: Optional[float] = None
+    delay_min: Optional[float] = None
 
 
 class SpillbackRequest(BaseModel):

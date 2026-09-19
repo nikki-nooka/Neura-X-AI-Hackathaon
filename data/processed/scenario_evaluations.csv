@@ -1,0 +1,31 @@
+scenario_id,target_segment,incident_type,severity,best_intervention_id,intervention_type,simulated_delay_relief_pct,roi_score,status
+TRAIN_SC_001,R0067,stalled_vehicle,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_002,R0230,demand_surge,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_003,R0075,accident_like,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_004,R0161,lane_blockage,2,PLAN0160,turn_lane,28.5,1.08,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_005,R0435,lane_blockage,3,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_006,R0166,road_closure,2,PLAN0165,signal_retiming,17.6,1.86,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_007,R0183,lane_blockage,3,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_008,R0278,stalled_vehicle,1,PLAN0277,connector,87.3,1.21,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_009,R0180,accident_like,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_010,R0363,accident_like,1,PLAN0362,lane_addition,51.5,0.43,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_011,R0133,accident_like,2,PLAN0132,capacity_upgrade,45.0,3.8,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_012,R0097,stalled_vehicle,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_013,R0043,stalled_vehicle,3,PLAN0042,lane_addition,12.0,0.18,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_014,R0372,accident_like,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_015,R0423,lane_blockage,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_016,R0373,accident_like,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_017,R0298,stalled_vehicle,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_018,R0113,stalled_vehicle,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_019,R0435,stalled_vehicle,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_020,R0214,road_closure,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_021,R0416,lane_blockage,3,PLAN0415,connector,6.4,0.04,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_022,R0251,stalled_vehicle,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_023,R0406,lane_blockage,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_024,R0137,accident_like,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_025,R0179,lane_blockage,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_026,R0069,stalled_vehicle,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_027,R0264,accident_like,1,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_028,R0167,accident_like,1,PLAN0166,turn_lane,12.8,0.15,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_029,R0265,lane_blockage,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL
+TRAIN_SC_030,R0211,accident_like,2,N/A (Corridor Diversion Only),Adaptive Diversion Routing,25.0,50.0,EVALUATED_COUNTERFACTUAL

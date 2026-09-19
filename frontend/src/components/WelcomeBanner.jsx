@@ -1,7 +1,23 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, Clock, Database } from 'lucide-react';
 
-export default function WelcomeBanner({ simTime = '06:42 PM' }) {
+export default function WelcomeBanner({ dataTimestamp = 'Jan 19, 23:55' }) {
+  const [systemTime, setSystemTime] = useState(() =>
+    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  );
+  const [systemDate, setSystemDate] = useState(() =>
+    new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setSystemTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setSystemDate(now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div style={{
       display: 'flex',
@@ -13,34 +29,58 @@ export default function WelcomeBanner({ simTime = '06:42 PM' }) {
       {/* Welcome Title */}
       <div>
         <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)' }}>
-          Welcome back,
+          Operational Mission Control
         </div>
         <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.5px', marginTop: '2px' }}>
-          Here's what's happening in Hyderabad
+          Hyderabad Urban Traffic Command Center
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-          Real-time intelligence for a smarter, more connected city.
+          436 road segments • 120 junctions • 89 signals • Live multi-horizon intelligence
         </p>
       </div>
 
-      {/* Right Date Card & Charminar Silhouette */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        {/* Date Card */}
+      {/* Right System Clock & Data Freshness */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Live System Time */}
         <div style={{
-          background: '#ffffff',
-          border: '1px solid var(--card-border)',
+          background: 'var(--card-bg, #ffffff)',
+          border: '1px solid var(--card-border, #e2e8f0)',
           borderRadius: '12px',
-          padding: '10px 16px',
+          padding: '8px 14px',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          gap: '10px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
         }}>
-          <Calendar size={18} color="var(--primary-blue)" />
+          <Clock size={16} color="var(--primary-blue, #2563eb)" />
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Mon, 15 Jul 2024</div>
-            <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>
-              {simTime}
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              System Time ({systemDate})
+            </div>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>
+              {systemTime}
+            </div>
+          </div>
+        </div>
+
+        {/* Data Telemetry Timestamp */}
+        <div style={{
+          background: 'var(--card-bg, #ffffff)',
+          border: '1px solid var(--card-border, #e2e8f0)',
+          borderRadius: '12px',
+          padding: '8px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        }}>
+          <Database size={16} color="#10b981" />
+          <div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Data Freshness
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>
+              Data as of {dataTimestamp}
             </div>
           </div>
         </div>

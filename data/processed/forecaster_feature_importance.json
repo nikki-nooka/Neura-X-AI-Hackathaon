@@ -1,0 +1,212 @@
+{
+  "speed_15m": [
+    {
+      "feature": "speed_kmh",
+      "importance_pct": 57.32
+    },
+    {
+      "feature": "speed_mean_15m",
+      "importance_pct": 38.18
+    },
+    {
+      "feature": "free_flow_speed_kmh",
+      "importance_pct": 2.02
+    },
+    {
+      "feature": "speed_10m",
+      "importance_pct": 1.38
+    },
+    {
+      "feature": "speed_5m",
+      "importance_pct": 0.32
+    },
+    {
+      "feature": "speed_30m",
+      "importance_pct": 0.28
+    },
+    {
+      "feature": "speed_mean_30m",
+      "importance_pct": 0.22
+    },
+    {
+      "feature": "speed_15m",
+      "importance_pct": 0.21
+    },
+    {
+      "feature": "travel_time_min",
+      "importance_pct": 0.08
+    },
+    {
+      "feature": "flow_vph",
+      "importance_pct": 0.0
+    }
+  ],
+  "congestion_15m": [
+    {
+      "feature": "congestion_index",
+      "importance_pct": 35.97
+    },
+    {
+      "feature": "congestion_5m",
+      "importance_pct": 16.73
+    },
+    {
+      "feature": "importance",
+      "importance_pct": 12.21
+    },
+    {
+      "feature": "occupancy_pct",
+      "importance_pct": 10.97
+    },
+    {
+      "feature": "congestion_15m",
+      "importance_pct": 7.84
+    },
+    {
+      "feature": "flow_ratio",
+      "importance_pct": 5.86
+    },
+    {
+      "feature": "flow_30m",
+      "importance_pct": 3.01
+    },
+    {
+      "feature": "flow_vph",
+      "importance_pct": 2.37
+    },
+    {
+      "feature": "flow_10m",
+      "importance_pct": 2.28
+    },
+    {
+      "feature": "flow_std_30m",
+      "importance_pct": 1.46
+    }
+  ],
+  "flow_15m": [
+    {
+      "feature": "flow_mean_15m",
+      "importance_pct": 56.72
+    },
+    {
+      "feature": "capacity_vph",
+      "importance_pct": 22.8
+    },
+    {
+      "feature": "importance",
+      "importance_pct": 11.56
+    },
+    {
+      "feature": "flow_30m",
+      "importance_pct": 2.47
+    },
+    {
+      "feature": "flow_15m",
+      "importance_pct": 2.33
+    },
+    {
+      "feature": "lanes",
+      "importance_pct": 1.22
+    },
+    {
+      "feature": "flow_10m",
+      "importance_pct": 1.1
+    },
+    {
+      "feature": "congestion_5m",
+      "importance_pct": 0.38
+    },
+    {
+      "feature": "occupancy_pct",
+      "importance_pct": 0.28
+    },
+    {
+      "feature": "congestion_15m",
+      "importance_pct": 0.23
+    }
+  ],
+  "speed_60m": [
+    {
+      "feature": "free_flow_speed_kmh",
+      "importance_pct": 98.95
+    },
+    {
+      "feature": "speed_mean_15m",
+      "importance_pct": 0.62
+    },
+    {
+      "feature": "speed_15m",
+      "importance_pct": 0.22
+    },
+    {
+      "feature": "speed_kmh",
+      "importance_pct": 0.1
+    },
+    {
+      "feature": "speed_10m",
+      "importance_pct": 0.05
+    },
+    {
+      "feature": "speed_5m",
+      "importance_pct": 0.04
+    },
+    {
+      "feature": "speed_30m",
+      "importance_pct": 0.01
+    },
+    {
+      "feature": "speed_mean_30m",
+      "importance_pct": 0.01
+    },
+    {
+      "feature": "flow_vph",
+      "importance_pct": 0.0
+    },
+    {
+      "feature": "occupancy_pct",
+      "importance_pct": 0.0
+    }
+  ],
+  "congestion_60m": [
+    {
+      "feature": "importance",
+      "importance_pct": 33.9
+    },
+    {
+      "feature": "speed_mean_15m",
+      "importance_pct": 30.07
+    },
+    {
+      "feature": "speed_kmh",
+      "importance_pct": 11.88
+    },
+    {
+      "feature": "flow_10m",
+      "importance_pct": 4.61
+    },
+    {
+      "feature": "congestion_5m",
+      "importance_pct": 3.84
+    },
+    {
+      "feature": "occupancy_pct",
+      "importance_pct": 3.32
+    },
+    {
+      "feature": "speed_10m",
+      "importance_pct": 2.73
+    },
+    {
+      "feature": "congestion_15m",
+      "importance_pct": 2.13
+    },
+    {
+      "feature": "speed_5m",
+      "importance_pct": 1.74
+    },
+    {
+      "feature": "flow_ratio",
+      "importance_pct": 1.15
+    }
+  ]
+}

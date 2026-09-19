@@ -3,36 +3,24 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
+# Virtual environments & Dependencies
 .venv/
 venv/
 env/
+node_modules/
+frontend/node_modules/
+.nuerax_source/node_modules/
 
-# IDE
+# OS & IDE metadata
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Data outputs
-data/processed/
-
-# Large CSV files (>100MB GitHub limit) — download separately
-NEURAX_SMART_CITIES_TRAINING_V2/traffic_train.csv
-NEURAX_SMART_CITIES_TRAINING_V2/traffic_validation.csv
-NEURAX_SMART_CITIES_TRAINING_V2/forecast_targets_train.csv
-NEURAX_SMART_CITIES_TRAINING_V2/forecast_targets_validation.csv
-
-# Model artifacts
-*.pkl
-*.gpickle
-*.joblib
-*.pt
-*.pth
-
-# Jupyter
 .ipynb_checkpoints/
+
+# Uncompressed Raw Files > 100MB (Tracked via compressed .csv.gz versions instead)
+NEURAX_SMART_CITIES_TRAINING_V2/traffic_train.csv
+data/processed/traffic_train_clean.csv
+data/processed/congestion_classified.csv

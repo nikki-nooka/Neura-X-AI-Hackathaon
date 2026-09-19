@@ -22,13 +22,27 @@ export async function fetchPlaybackSteps() {
   return res.json();
 }
 
-export async function fetchForecast(segmentId) {
+export async function fetchForecast(segmentId, telemetryOverrides = null) {
+  const payload = { segment_id: segmentId };
+  if (telemetryOverrides) {
+    Object.assign(payload, telemetryOverrides);
+  }
   const res = await fetch(`${API_BASE}/forecast/predict`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ segment_id: segmentId }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('Failed to generate forecast');
+  return res.json();
+}
+
+export async function classifyIncident(segmentId, telemetry = {}) {
+  const res = await fetch(`${API_BASE}/incident/classify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ segment_id: segmentId, ...telemetry }),
+  });
+  if (!res.ok) throw new Error('Failed to classify incident');
   return res.json();
 }
 
@@ -145,4 +159,32 @@ export async function fetchAllRoadsIntelligence() {
   return res.json();
 }
 
+export async function fetchFeatureImportance() {
+  const res = await fetch(`${API_BASE}/forecast/feature-importance`);
+  if (!res.ok) throw new Error('Failed to fetch feature importance');
+  return res.json();
+}
 
+export async function fetchHealth() {
+  const res = await fetch(`${API_BASE}/health`);
+  if (!res.ok) throw new Error('Failed to fetch system health');
+  return res.json();
+}
+
+export async function fetchActiveIncidents() {
+  const res = await fetch(`${API_BASE}/incident/active`);
+  if (!res.ok) throw new Error('Failed to fetch active incidents');
+  return res.json();
+}
+
+export async function fetchNetworkHorizons() {
+  const res = await fetch(`${API_BASE}/forecast/network-horizons`);
+  if (!res.ok) throw new Error('Failed to fetch network horizons');
+  return res.json();
+}
+
+export async function fetchTrafficTimeline(range = 'Today') {
+  const res = await fetch(`${API_BASE}/network/traffic-timeline?range=${encodeURIComponent(range)}`);
+  if (!res.ok) throw new Error('Failed to fetch traffic timeline');
+  return res.json();
+}

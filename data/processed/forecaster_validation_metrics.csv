@@ -1,0 +1,13 @@
+target,horizon,validation_mae,validation_rmse,evaluated_samples
+speed,15m,0.538,1.173,150000
+speed,30m,0.636,1.399,150000
+speed,45m,0.688,1.473,150000
+speed,60m,0.736,1.547,150000
+flow,15m,155.64,217.554,150000
+flow,30m,158.312,223.281,150000
+flow,45m,159.689,225.555,150000
+flow,60m,162.085,228.504,150000
+congestion,15m,0.012,0.025,150000
+congestion,30m,0.014,0.031,150000
+congestion,45m,0.016,0.033,150000
+congestion,60m,0.017,0.034,150000

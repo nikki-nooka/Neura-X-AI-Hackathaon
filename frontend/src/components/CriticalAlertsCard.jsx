@@ -1,47 +1,51 @@
 import React from 'react';
 import { AlertTriangle, ArrowRight, Cone, TrendingUp, Users } from 'lucide-react';
 
-export default function CriticalAlertsCard({ onSelectAlert }) {
+export default function CriticalAlertsCard({ onSelectAlert, onViewAll }) {
   const alerts = [
     {
       id: 'a1',
       code: 'R0435',
-      title: 'R0435 - Severe congestion',
-      desc: 'Queue length exceeded 600 m',
+      title: 'R0435 - Severe Congestion',
+      desc: 'RandomForest: Stalled vehicle detected · Queue > 600m',
       time: '12 min ago',
       icon: AlertTriangle,
       color: 'var(--status-red)',
       bg: '#fef2f2',
+      speed: '18 km/h',
     },
     {
       id: 'a2',
-      code: 'J023',
-      title: 'J023 - Minor accident',
-      desc: 'One lane blocked, slow movement',
-      time: '28 min ago',
-      icon: AlertTriangle,
-      color: 'var(--status-amber)',
-      bg: '#fffbeb',
+      code: 'R0376',
+      title: 'R0376 - Critical Demand Surge',
+      desc: 'Volume approaching capacity · 72% congestion index',
+      time: '24 min ago',
+      icon: TrendingUp,
+      color: 'var(--status-red)',
+      bg: '#fef2f2',
+      speed: '21 km/h',
     },
     {
       id: 'a3',
       code: 'R0211',
-      title: 'R0211 - Road work',
-      desc: '61% capacity reduction',
+      title: 'R0211 - Road Work Resurfacing',
+      desc: '61% capacity reduction · Single lane open',
       time: '1 hr ago',
       icon: Cone,
       color: 'var(--status-orange)',
       bg: '#fff7ed',
+      speed: '22 km/h',
     },
     {
       id: 'a4',
       code: 'R0176',
-      title: 'R0176 - High volume',
-      desc: 'Unusual demand surge detected',
+      title: 'R0176 - High Volume Arterial',
+      desc: 'Upstream shockwave forming · 15m delay expected',
       time: '2 hr ago',
-      icon: TrendingUp,
-      color: 'var(--status-purple)',
-      bg: '#f5f3ff',
+      icon: AlertTriangle,
+      color: 'var(--status-amber)',
+      bg: '#fffbeb',
+      speed: '26 km/h',
     },
   ];
 
@@ -57,6 +61,7 @@ export default function CriticalAlertsCard({ onSelectAlert }) {
         </div>
 
         <button
+          onClick={onViewAll}
           style={{
             background: 'transparent',
             border: 'none',
@@ -68,6 +73,7 @@ export default function CriticalAlertsCard({ onSelectAlert }) {
             alignItems: 'center',
             gap: '3px',
           }}
+          title="View all road segments in 436 Roads Intelligence"
         >
           <span>View All</span>
           <ArrowRight size={12} />
@@ -91,23 +97,35 @@ export default function CriticalAlertsCard({ onSelectAlert }) {
                 background: '#f8fafc',
                 border: '1px solid #f1f5f9',
                 cursor: 'pointer',
-                transition: 'background 0.15s',
+                transition: 'all 0.15s ease-in-out',
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f8fafc';
+                e.currentTarget.style.borderColor = '#f1f5f9';
+              }}
+              title={`Click to inspect corridor ${item.code}`}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: '8px',
-                  background: item.bg,
-                  color: item.color,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}>
-                  <Icon size={15} />
+                <div
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: '8px',
+                    background: item.bg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: item.color,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon size={16} />
                 </div>
+
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)' }}>
                     {item.title}
@@ -118,8 +136,13 @@ export default function CriticalAlertsCard({ onSelectAlert }) {
                 </div>
               </div>
 
-              <div style={{ fontSize: '10px', color: 'var(--text-light)', whiteSpace: 'nowrap' }}>
-                {item.time}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                <span style={{ fontSize: '10px', color: 'var(--text-light)', fontWeight: 500 }}>
+                  {item.time}
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: item.color }}>
+                  {item.speed}
+                </span>
               </div>
             </div>
           );

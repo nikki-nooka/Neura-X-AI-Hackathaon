@@ -11,21 +11,28 @@ import {
   Gauge,
 } from 'lucide-react';
 
-export default function MetricCards({ kpis }) {
+export default function MetricCards({ kpis, onNavigate }) {
   // Semi-circle gauge arc for Network Health (68/100)
   const score = kpis ? Math.round(100 - (kpis.gridlock_pct * 10 + kpis.heavy_pct * 4)) : 68;
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(6, 1fr)',
-      gap: '14px',
-    }}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(6, 1fr)',
+        gap: '14px',
+      }}
+    >
       {/* 1. Network Health */}
-      <div className="kpi-card">
+      <div
+        className="kpi-card"
+        onClick={() => onNavigate && onNavigate('resilience')}
+        style={{ cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+        title="Click to inspect Network Resilience & Critical Corridors"
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>Network Health</span>
-          <ChevronRight size={14} color="var(--text-light)" />
+          <ChevronRight size={14} color="var(--primary-blue)" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
@@ -63,10 +70,15 @@ export default function MetricCards({ kpis }) {
       </div>
 
       {/* 2. Average Speed */}
-      <div className="kpi-card">
+      <div
+        className="kpi-card"
+        onClick={() => onNavigate && onNavigate('forecast')}
+        style={{ cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+        title="Click to view Multi-Horizon Speed Predictor"
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>Average Speed</span>
-          <ChevronRight size={14} color="var(--text-light)" />
+          <ChevronRight size={14} color="var(--primary-blue)" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
@@ -85,10 +97,15 @@ export default function MetricCards({ kpis }) {
       </div>
 
       {/* 3. Active Incidents */}
-      <div className="kpi-card">
+      <div
+        className="kpi-card"
+        onClick={() => onNavigate && onNavigate('spillback')}
+        style={{ cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+        title="Click to analyze Incident Spillback & Shockwaves"
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>Active Incidents</span>
-          <ChevronRight size={14} color="var(--text-light)" />
+          <ChevronRight size={14} color="var(--status-red)" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
@@ -107,10 +124,15 @@ export default function MetricCards({ kpis }) {
       </div>
 
       {/* 4. Congested Segments */}
-      <div className="kpi-card">
+      <div
+        className="kpi-card"
+        onClick={() => onNavigate && onNavigate('roads')}
+        style={{ cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+        title="Click to filter 436 Roads by Congestion Level"
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>Congested Segments</span>
-          <ChevronRight size={14} color="var(--text-light)" />
+          <ChevronRight size={14} color="var(--status-red)" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
@@ -118,7 +140,7 @@ export default function MetricCards({ kpis }) {
             <Car size={18} />
           </div>
           <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-main)', fontFamily: 'var(--font-mono)' }}>
-            34
+            {kpis ? kpis.active_bottlenecks_count || 34 : 34}
           </div>
         </div>
 
@@ -129,10 +151,15 @@ export default function MetricCards({ kpis }) {
       </div>
 
       {/* 5. Average Delay */}
-      <div className="kpi-card">
+      <div
+        className="kpi-card"
+        onClick={() => onNavigate && onNavigate('response')}
+        style={{ cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+        title="Click to simulate Diversion Rerouting to cut Delay"
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>Average Delay</span>
-          <ChevronRight size={14} color="var(--text-light)" />
+          <ChevronRight size={14} color="var(--primary-blue)" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
@@ -151,10 +178,15 @@ export default function MetricCards({ kpis }) {
       </div>
 
       {/* 6. Roadworks */}
-      <div className="kpi-card">
+      <div
+        className="kpi-card"
+        onClick={() => onNavigate && onNavigate('infrastructure')}
+        style={{ cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+        title="Click to view Infrastructure Upgrade Candidates & Works"
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>Roadworks</span>
-          <ChevronRight size={14} color="var(--text-light)" />
+          <ChevronRight size={14} color="var(--status-orange)" />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0' }}>
