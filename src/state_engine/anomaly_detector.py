@@ -555,6 +555,15 @@ def main() -> None:
     sigs.to_csv(sigs_out, index=False)
     print(f"Saved incident signatures → {sigs_out}")
 
+    import joblib
+    clf_out = DATA_PROCESSED / "incident_classifier.joblib"
+    joblib.dump({
+        "binary_model": model_info["model"],
+        "multiclass_model": mc_info["model"],
+        "feature_cols": model_info["feature_cols"],
+    }, clf_out)
+    print(f"Saved incident classifier models → {clf_out}")
+
     print("\nDone.")
 
 
