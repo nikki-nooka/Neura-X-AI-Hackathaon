@@ -97,62 +97,87 @@ The dataset contains **6 types of realistic sensor noise** that must be handled:
 ---
 
 ## 🏗️ System Architecture
+> 📎 **Interactive architecture diagram:** See [`assets/architecture-flow.html`](assets/architecture-flow.html) for the full visual flow.
 
-> 📎 **Interactive architecture diagram:** See `assets/architecture-flow.html` for the full visual flow.
+```mermaid
+flowchart TD
+    %% Global Styling Classes
+    classDef rawNode fill:#0f172a,stroke:#334155,stroke-width:1.5px,color:#f8fafc,rx:8px,ry:8px;
+    classDef s1Node fill:#1e1b4b,stroke:#6366f1,stroke-width:1.5px,color:#e0e7ff,rx:8px,ry:8px;
+    classDef s2Node fill:#3b0764,stroke:#c084fc,stroke-width:1.5px,color:#fae8ff,rx:8px,ry:8px;
+    classDef s3Node fill:#082f49,stroke:#38bdf8,stroke-width:1.5px,color:#e0f2fe,rx:8px,ry:8px;
+    classDef s4Node fill:#064e3b,stroke:#34d399,stroke-width:1.5px,color:#ecfdf5,rx:8px,ry:8px;
+    classDef s5Node fill:#451a03,stroke:#fbbf24,stroke-width:1.5px,color:#fef3c7,rx:8px,ry:8px;
+    classDef outNode fill:#18181b,stroke:#0ea5e9,stroke-width:2px,color:#ffffff,rx:10px,ry:10px;
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      📡 DATA SOURCES (Organizer-Provided)              │
-│  traffic.csv · network.csv · nodes.csv · incidents.csv · context.csv   │
-│  signals.csv · turns.csv · od_demand.csv · roadworks.csv · planning.csv│
-└───────────────────────────────┬─────────────────────────────────────────┘
-                                ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    STAGE 1: INGESTION & CLEANING                       │
-│  ┌──────────────┐  ┌───────────────┐  ┌──────────────────┐            │
-│  │ Data Cleaner │→ │ Graph Builder │→ │ Feature Engineer │            │
-│  │ (6 noise fix)│  │ (NetworkX)    │  │ (lags, context)  │            │
-│  └──────────────┘  └───────────────┘  └──────────────────┘            │
-└───────────────────────────────┬─────────────────────────────────────────┘
-                                ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    STAGE 2: NETWORK STATE ENGINE                       │
-│  ┌──────────────────┐  ┌─────────────────┐  ┌───────────────────┐     │
-│  │Congestion Tracker│→ │Anomaly Detector │→ │ Spillback Tracer  │     │
-│  │(4-level classify)│  │(Stats + ML)     │  │ (BFS propagation) │     │
-│  └──────────────────┘  └─────────────────┘  └───────────────────┘     │
-└───────────────────────────────┬─────────────────────────────────────────┘
-                                ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│               STAGE 3: MULTI-HORIZON FORECASTING                       │
-│  ┌───────────────┐  ┌──────────────┐  ┌──────────────┐                │
-│  │LightGBM Base  │→ │  ST-GNN      │→ │  Ensemble    │                │
-│  │(per segment)  │  │(graph-aware) │  │ (weighted)   │                │
-│  └───────────────┘  └──────────────┘  └──────────────┘                │
-│            Targets: speed / flow / congestion @ 15, 30, 45, 60 min     │
-└───────────────────────────────┬─────────────────────────────────────────┘
-                                ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                 STAGE 4: OPERATIONAL ADVISORY ENGINE                    │
-│  ┌──────────────────┐  ┌─────────────────┐  ┌───────────────────┐     │
-│  │Diversion Planner │→ │Signal Optimizer │→ │ LLM Briefing Gen  │     │
-│  │(k-shortest path) │  │(green ratio)    │  │(Groq Llama 3.3)   │     │
-│  └──────────────────┘  └─────────────────┘  └───────────────────┘     │
-└───────────────────────────────┬─────────────────────────────────────────┘
-                                ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│              STAGE 5: INFRASTRUCTURE INTERVENTION SIMULATOR            │
-│  ┌──────────────────┐  ┌─────────────────┐  ┌───────────────────┐     │
-│  │Bottleneck Finder │→ │What-If Simulator│→ │Cost-Benefit Ranker│     │
-│  │(recurring patterns│  │(counterfactual) │  │(ROI per upgrade)  │     │
-│  └──────────────────┘  └─────────────────┘  └───────────────────┘     │
-└───────────────────────────────┬─────────────────────────────────────────┘
-                                ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    🖥️ DECISION SUPPORT OUTPUTS                         │
-│  🌐 3D Globe View  ·  🗺️ Network Map  ·  📊 Static Reports           │
-│  🌍 Multi-Lingual  ·  🎮 What-If Console  ·  📋 Action Advisories    │
-└─────────────────────────────────────────────────────────────────────────┘
+    subgraph L0 ["📦 LAYER 0 · MULTI-MODAL DATA INGESTION (1.88M Records · 10 Datasets)"]
+        direction LR
+        D1["📊 <b>Sensor Telemetry</b><br/><code>traffic_train.csv</code><br/><i>1.88M rows · 5-min cadence</i>"]:::rawNode
+        D2["🗺️ <b>Network Topology</b><br/><code>network.csv</code> · <code>nodes.csv</code><br/><i>436 edges · 120 junctions</i>"]:::rawNode
+        D3["🚦 <b>Controls & OD Demand</b><br/><code>signals.csv</code> · <code>od_demand.csv</code><br/><i>89 signal plans · 1,500 OD pairs</i>"]:::rawNode
+        D4["🌧️ <b>Dynamic Context</b><br/><code>incidents.csv</code> · <code>context.csv</code><br/><i>49 incidents · weather & roadworks</i>"]:::rawNode
+    end
+
+    subgraph L1 ["🧹 LAYER 1 · DATA CLEANSING & SPATIAL GRAPH PIPELINE (src/ingestion/)"]
+        direction LR
+        C1["<b>Data Cleanser</b><br/><code>cleaner.py</code><br/>• Fixes 6 noise types & duplicates<br/>• 4σ rolling spike filter & ffill"]:::s1Node
+        C2["<b>Graph Builder</b><br/><code>graph_builder.py</code><br/>• NetworkX directed road topology<br/>• Signal phases & turn constraints"]:::s1Node
+        C3["<b>Feature Fusion</b><br/><code>feature_eng.py</code><br/>• Spatio-temporal lag matrix<br/>• Rolling statistics & weather joins"]:::s1Node
+        C1 --> C2 --> C3
+    end
+
+    subgraph L2 ["🚦 LAYER 2 · REAL-TIME NETWORK STATE ENGINE (src/state_engine/)"]
+        direction LR
+        S1["<b>Congestion Tracker</b><br/><code>congestion_tracker.py</code><br/>• 4-tier status (Free to Gridlock)<br/>• Real-time TTI & queue length"]:::s2Node
+        S2["<b>Incident & Anomaly Detector</b><br/><code>anomaly_detector.py</code><br/>• 3σ baseline deviation engine<br/>• Random Forest incident classifier"]:::s2Node
+        S3["<b>Spillback Causal Tracer</b><br/><code>spillback_tracer.py</code><br/>• BFS backward queue propagation<br/>• Causal delay chain with ETA"]:::s2Node
+        S1 --> S2 --> S3
+    end
+
+    subgraph L3 ["🔮 LAYER 3 · MULTI-HORIZON PREDICTIVE FORECASTING (src/forecasting/)"]
+        direction LR
+        F1["<b>LightGBM Regressor</b><br/><code>lightgbm_baseline.py</code><br/><i>Fast tabular gradient boosting</i>"]:::s3Node
+        F2["<b>Spatial-Temporal GNN</b><br/><code>stgnn_model.py</code><br/><i>Graph attention cross-segment</i>"]:::s3Node
+        F3["<b>Weighted Blended Ensemble</b><br/><code>ensemble.py</code><br/><b>Targets:</b> Speed, Flow, Congestion @ 15, 30, 45, 60 min"]:::s3Node
+        F1 --> F3
+        F2 --> F3
+    end
+
+    subgraph INTERVENTIONS ["⚡ ADAPTIVE INTERVENTION & PLANNING ENGINES"]
+        direction LR
+        subgraph L4 ["🎯 LAYER 4 · TACTICAL ADVISORY<br/><i>(Real-Time Traffic Control)</i>"]
+            direction TB
+            A1["<b>K-Shortest Path Router</b><br/><code>diversion_planner.py</code><br/>• Dynamic rerouting with spare capacity"]:::s4Node
+            A2["<b>Adaptive Signal Optimizer</b><br/><code>signal_optimizer.py</code><br/>• Dynamic green-split adjustment"]:::s4Node
+            A3["<b>AI Operator Briefings</b><br/><code>briefing_generator.py</code><br/>• Groq Llama 3.3 in EN / HI / TE"]:::s4Node
+            A1 --> A2 --> A3
+        end
+
+        subgraph L5 ["🏗️ LAYER 5 · STRATEGIC PLANNING<br/><i>(Long-Term Infrastructure Investment)</i>"]
+            direction TB
+            I1["<b>Bottleneck Detector</b><br/><code>bottleneck_detector.py</code><br/>• Persistent recurring choke-points"]:::s5Node
+            I2["<b>Counterfactual Simulator</b><br/><code>intervention_simulator.py</code><br/>• Before/after what-if flow replay"]:::s5Node
+            I3["<b>Cost-Benefit Ranker</b><br/><code>cost_benefit_analyzer.py</code><br/>• ROI ranking across 90 candidates"]:::s5Node
+            I1 --> I2 --> I3
+        end
+    end
+
+    subgraph L6 ["🖥️ LAYER 6 · UNIFIED COMMAND CENTER UI (dashboard/app.py)"]
+        direction LR
+        O1["🗺️ <b>Live GIS Map</b><br/><i>Folium & 3D Deck.gl View</i>"]:::outNode
+        O2["🎮 <b>What-If Console</b><br/><i>Live incident & upgrade injector</i>"]:::outNode
+        O3["🚨 <b>Incident Feed</b><br/><i>Spillback alerts & diversion orders</i>"]:::outNode
+        O4["📋 <b>Action Briefings</b><br/><i>One-click officer reports in 3 languages</i>"]:::outNode
+    end
+
+    %% Hierarchical Connectors
+    L0 -->|Stream Observation Batches| L1
+    L1 -->|Clean Network Graph & Features| L2
+    L2 -->|Current Network State & Anomalies| L3
+    L3 -->|Short-Horizon Speed/Flow Predictions| L4
+    L3 -->|Long-Term Recurrent Congestion Patterns| L5
+    L4 -->|Active Tactical Advisories| L6
+    L5 -->|Ranked Infrastructure Interventions| L6
 ```
 
 ### Project Structure

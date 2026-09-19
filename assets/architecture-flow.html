@@ -238,6 +238,44 @@
   .st-5 .stage-num { color: var(--accent-cyan); }
   .st-5:hover { border-color: rgba(34, 211, 238, 0.3); }
 
+  /* Hierarchical Flow Connectors */
+  .flow-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: -4px 0;
+    position: relative;
+    z-index: 2;
+  }
+  .flow-line {
+    height: 20px;
+    width: 2px;
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.8), rgba(56, 189, 248, 0.8));
+    border-radius: 2px;
+  }
+  .flow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #cbd5e1;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    padding: 4px 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  .flow-badge .arrow {
+    color: var(--accent-blue);
+    font-weight: 900;
+    font-size: 11px;
+  }
+
   /* Output Chips Grid */
   .output-grid {
     display: grid;
@@ -321,6 +359,13 @@
   <!-- Pipeline Stages -->
   <div class="stage-grid">
 
+    <!-- Flow Connector: Inputs -> Stage 1 -->
+    <div class="flow-connector" style="margin: 4px 0;">
+      <div class="flow-line"></div>
+      <div class="flow-badge"><span class="arrow">↓</span> Multi-Modal Sensor & Network Ingestion Stream</div>
+      <div class="flow-line"></div>
+    </div>
+
     <!-- Stage 1 -->
     <div class="stage-card st-1">
       <div class="stage-meta">
@@ -351,6 +396,13 @@
           <div class="step-desc">Lags, rolling stats, weather integration, active roadwork fractions, and signal phases.</div>
         </div>
       </div>
+    </div>
+
+    <!-- Flow Connector 1->2 -->
+    <div class="flow-connector">
+      <div class="flow-line"></div>
+      <div class="flow-badge"><span class="arrow">↓</span> Clean Network Graph & Spatio-Temporal Features</div>
+      <div class="flow-line"></div>
     </div>
 
     <!-- Stage 2 -->
@@ -385,6 +437,13 @@
       </div>
     </div>
 
+    <!-- Flow Connector 2->3 -->
+    <div class="flow-connector">
+      <div class="flow-line"></div>
+      <div class="flow-badge"><span class="arrow">↓</span> Real-Time Network State & Anomaly Context</div>
+      <div class="flow-line"></div>
+    </div>
+
     <!-- Stage 3 -->
     <div class="stage-card st-3">
       <div class="stage-meta">
@@ -415,6 +474,13 @@
           <div class="step-desc">Blends tabular + graph predictions for minimum MAE/RMSE across all horizons.</div>
         </div>
       </div>
+    </div>
+
+    <!-- Flow Connector 3->4 -->
+    <div class="flow-connector">
+      <div class="flow-line"></div>
+      <div class="flow-badge"><span class="arrow">↓</span> Multi-Horizon Predictive State Matrix (15 / 30 / 45 / 60 min)</div>
+      <div class="flow-line"></div>
     </div>
 
     <!-- Stage 4 -->
@@ -449,6 +515,13 @@
       </div>
     </div>
 
+    <!-- Flow Connector 4->5 -->
+    <div class="flow-connector">
+      <div class="flow-line"></div>
+      <div class="flow-badge"><span class="arrow">↓</span> Tactical Real-Time Advisories & Recurring Bottleneck Feedback</div>
+      <div class="flow-line"></div>
+    </div>
+
     <!-- Stage 5 -->
     <div class="stage-card st-5">
       <div class="stage-meta">
@@ -481,6 +554,13 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- Flow Connector: Stages -> Outputs -->
+  <div class="flow-connector" style="margin: 4px 0;">
+    <div class="flow-line"></div>
+    <div class="flow-badge"><span class="arrow">↓</span> Unified Command Center Telemetry & Decision Support</div>
+    <div class="flow-line"></div>
   </div>
 
   <!-- Decision Support Capabilities -->
