@@ -1,0 +1,38 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data outputs
+data/processed/
+
+# Large CSV files (>100MB GitHub limit) — download separately
+NEURAX_SMART_CITIES_TRAINING_V2/traffic_train.csv
+NEURAX_SMART_CITIES_TRAINING_V2/traffic_validation.csv
+NEURAX_SMART_CITIES_TRAINING_V2/forecast_targets_train.csv
+NEURAX_SMART_CITIES_TRAINING_V2/forecast_targets_validation.csv
+
+# Model artifacts
+*.pkl
+*.gpickle
+*.joblib
+*.pt
+*.pth
+
+# Jupyter
+.ipynb_checkpoints/

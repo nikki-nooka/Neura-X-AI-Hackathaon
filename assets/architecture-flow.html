@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Architecture Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0e1a; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 40px 20px; min-height: 100vh; }
+  .title { text-align: center; color: #e2e8f0; font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 48px; }
+  .flow-container { max-width: 1100px; margin: 0 auto; position: relative; }
+
+  /* Main flow row */
+  .flow-row { display: flex; align-items: stretch; justify-content: center; gap: 0; margin-bottom: 32px; flex-wrap: nowrap; }
+  .flow-row.secondary { margin-top: 16px; }
+
+  /* Cards */
+  .card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 20px 18px;
+    min-width: 170px;
+    max-width: 200px;
+    flex: 1;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  .card:hover { border-color: #60a5fa; box-shadow: 0 0 24px rgba(96, 165, 250, 0.15); transform: translateY(-2px); }
+  .card-icon { font-size: 28px; margin-bottom: 10px; }
+  .card-title { color: #f1f5f9; font-size: 13px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card-desc { color: #94a3b8; font-size: 11.5px; line-height: 1.5; }
+  .card-tag {
+    display: inline-block; margin-top: 10px; padding: 3px 10px;
+    border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+  }
+
+  /* Color themes per stage */
+  .stage-ingest { border-left: 3px solid #f59e0b; }
+  .stage-ingest .card-tag { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .stage-state { border-left: 3px solid #ef4444; }
+  .stage-state .card-tag { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .stage-forecast { border-left: 3px solid #8b5cf6; }
+  .stage-forecast .card-tag { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+  .stage-advisory { border-left: 3px solid #22c55e; }
+  .stage-advisory .card-tag { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .stage-infra { border-left: 3px solid #06b6d4; }
+  .stage-infra .card-tag { background: rgba(6,182,212,0.15); color: #06b6d4; }
+  .stage-ui { border-left: 3px solid #ec4899; }
+  .stage-ui .card-tag { background: rgba(236,72,153,0.15); color: #ec4899; }
+
+  /* Arrows */
+  .arrow {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 40px; color: #475569; font-size: 22px; flex-shrink: 0;
+  }
+  .arrow-down {
+    text-align: center; color: #475569; font-size: 28px; margin: 8px 0;
+  }
+
+  /* Section headers */
+  .section-label {
+    text-align: center; margin: 40px 0 20px;
+    color: #475569; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 2px;
+    display: flex; align-items: center; gap: 16px; justify-content: center;
+  }
+  .section-label::before, .section-label::after {
+    content: ''; height: 1px; width: 80px; background: #1e293b;
+  }
+
+  /* Bottom output cards */
+  .outputs { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  .output-chip {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 1px solid #334155; border-radius: 12px;
+    padding: 14px 20px; text-align: center; min-width: 140px;
+  }
+  .output-chip:hover { border-color: #ec4899; }
+  .output-chip .chip-icon { font-size: 22px; margin-bottom: 6px; }
+  .output-chip .chip-label { color: #e2e8f0; font-size: 12px; font-weight: 600; }
+  .output-chip .chip-sub { color: #64748b; font-size: 10px; margin-top: 3px; }
+
+  /* Data sources banner */
+  .data-banner {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px;
+  }
+  .data-pill {
+    background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 20px; padding: 6px 14px; color: #f59e0b;
+    font-size: 11px; font-weight: 500;
+  }
+
+  /* Compliance banner */
+  .compliance {
+    margin-top: 40px; text-align: center; padding: 16px;
+    background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.15);
+    border-radius: 12px; color: #94a3b8; font-size: 11px; line-height: 1.6;
+  }
+  .compliance strong { color: #ef4444; }
+</style>
+</head>
+<body>
+
+<div class="title">🚦 Urban Traffic Intelligence System</div>
+<div class="subtitle">End-to-End Architecture Flow — Software-Only Decision Support</div>
+
+<div class="flow-container">
+
+  <!-- Data Sources -->
+  <div class="section-label">📡 Data Sources (Organizer-Provided)</div>
+  <div class="data-banner">
+    <span class="data-pill">traffic_train.csv (1.9M rows)</span>
+    <span class="data-pill">network.csv (436 segments)</span>
+    <span class="data-pill">nodes.csv (120 junctions)</span>
+    <span class="data-pill">incidents.csv (49 events)</span>
+    <span class="data-pill">signal_plans.csv (89 signals)</span>
+    <span class="data-pill">context.csv (weather/events)</span>
+    <span class="data-pill">od_demand.csv (1500 OD pairs)</span>
+    <span class="data-pill">roadworks.csv</span>
+    <span class="data-pill">turn_restrictions.csv</span>
+    <span class="data-pill">planning_candidates.csv (90)</span>
+  </div>
+
+  <div class="arrow-down">⬇</div>
+
+  <!-- Stage 1: Ingestion + Cleaning -->
+  <div class="section-label">Stage 1 — Ingestion & Cleaning</div>
+  <div class="flow-row">
+    <div class="card stage-ingest">
+      <div class="card-icon">🧹</div>
+      <div class="card-title">Data Cleaner</div>
+      <div class="card-desc">Fix 6 noise types: missing values, duplicates, spikes, stuck sensors, negatives, row shuffle</div>
+      <span class="card-tag">cleaner.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-ingest">
+      <div class="card-icon">🕸️</div>
+      <div class="card-title">Graph Builder</div>
+      <div class="card-desc">NetworkX DiGraph from road network with signals, turns, OD demand, bottleneck flags</div>
+      <span class="card-tag">graph_builder.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-ingest">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Feature Engine</div>
+      <div class="card-desc">Temporal lags, rolling stats, weather joins, roadwork flags, signal features</div>
+      <span class="card-tag">feature_eng.py</span>
+    </div>
+  </div>
+
+  <div class="arrow-down">⬇</div>
+
+  <!-- Stage 2: State Engine -->
+  <div class="section-label">Stage 2 — Network State Engine</div>
+  <div class="flow-row">
+    <div class="card stage-state">
+      <div class="card-icon">🚥</div>
+      <div class="card-title">Congestion Tracker</div>
+      <div class="card-desc">Classify every segment: Free Flow → Moderate → Heavy → Gridlock. Compute TTI per reading</div>
+      <span class="card-tag">congestion_tracker.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-state">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">Anomaly Detector</div>
+      <div class="card-desc">Statistical + ML detection of unusual speed/flow drops. Incident signature matching</div>
+      <span class="card-tag">anomaly_detector.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-state">
+      <div class="card-icon">🌊</div>
+      <div class="card-title">Spillback Tracer</div>
+      <div class="card-desc">BFS on road graph to trace congestion propagation to upstream segments with timing</div>
+      <span class="card-tag">spillback_tracer.py</span>
+    </div>
+  </div>
+
+  <div class="arrow-down">⬇</div>
+
+  <!-- Stage 3: Forecasting -->
+  <div class="section-label">Stage 3 — Multi-Horizon Forecasting (15/30/45/60 min)</div>
+  <div class="flow-row">
+    <div class="card stage-forecast">
+      <div class="card-icon">📊</div>
+      <div class="card-title">LightGBM Baseline</div>
+      <div class="card-desc">Gradient boosting per segment × horizon. Fast, interpretable, strong baseline</div>
+      <span class="card-tag">lightgbm_baseline.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-forecast">
+      <div class="card-icon">🧠</div>
+      <div class="card-title">ST-GNN Model</div>
+      <div class="card-desc">Spatial-Temporal Graph Neural Network — captures cross-segment dependencies</div>
+      <span class="card-tag">stgnn_model.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-forecast">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Ensemble</div>
+      <div class="card-desc">Weighted blend of tabular + graph models. Optimized on validation MAE/RMSE</div>
+      <span class="card-tag">ensemble.py</span>
+    </div>
+  </div>
+
+  <div class="arrow-down">⬇</div>
+
+  <!-- Stage 4: Advisory -->
+  <div class="section-label">Stage 4 — Operational Advisory Engine</div>
+  <div class="flow-row">
+    <div class="card stage-advisory">
+      <div class="card-icon">🔀</div>
+      <div class="card-title">Diversion Planner</div>
+      <div class="card-desc">K-shortest paths respecting turn restrictions, weighted by spare capacity</div>
+      <span class="card-tag">diversion_planner.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-advisory">
+      <div class="card-icon">🚦</div>
+      <div class="card-title">Signal Optimizer</div>
+      <div class="card-desc">Green ratio & offset tuning to meter inflow before predicted congestion</div>
+      <span class="card-tag">signal_optimizer.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-advisory">
+      <div class="card-icon">📝</div>
+      <div class="card-title">LLM Briefing</div>
+      <div class="card-desc">Groq Llama 3.3 70B generates plain-English situational reports with evidence</div>
+      <span class="card-tag">briefing_generator.py</span>
+    </div>
+  </div>
+
+  <div class="arrow-down">⬇</div>
+
+  <!-- Stage 5: Infrastructure -->
+  <div class="section-label">Stage 5 — Infrastructure Intervention Simulator</div>
+  <div class="flow-row">
+    <div class="card stage-infra">
+      <div class="card-icon">📍</div>
+      <div class="card-title">Bottleneck Finder</div>
+      <div class="card-desc">Identify persistent geometric/capacity limitations from 15 days of patterns</div>
+      <span class="card-tag">bottleneck_detector.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-infra">
+      <div class="card-icon">🔬</div>
+      <div class="card-title">What-If Simulator</div>
+      <div class="card-desc">Counterfactual: apply 90 planning candidates, measure before/after network impact</div>
+      <span class="card-tag">intervention_simulator.py</span>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card stage-infra">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Cost-Benefit Ranker</div>
+      <div class="card-desc">Rank interventions by (delay_reduction × vehicles) / cost_index</div>
+      <span class="card-tag">cost_benefit_analyzer.py</span>
+    </div>
+  </div>
+
+  <div class="arrow-down">⬇</div>
+
+  <!-- Outputs -->
+  <div class="section-label">🖥️ Decision Support Outputs</div>
+  <div class="outputs">
+    <div class="output-chip">
+      <div class="chip-icon">🌐</div>
+      <div class="chip-label">3D Globe View</div>
+      <div class="chip-sub">Interactive network visualization</div>
+    </div>
+    <div class="output-chip">
+      <div class="chip-icon">🗺️</div>
+      <div class="chip-label">Live Network Map</div>
+      <div class="chip-sub">Congestion + spillback animation</div>
+    </div>
+    <div class="output-chip">
+      <div class="chip-icon">📊</div>
+      <div class="chip-label">Static Reports</div>
+      <div class="chip-sub">PDF/PNG graphs & tables</div>
+    </div>
+    <div class="output-chip">
+      <div class="chip-icon">🌍</div>
+      <div class="chip-label">Multi-Lingual</div>
+      <div class="chip-sub">EN / HI / TE briefings</div>
+    </div>
+    <div class="output-chip">
+      <div class="chip-icon">🎮</div>
+      <div class="chip-label">What-If Console</div>
+      <div class="chip-sub">Interactive scenario testing</div>
+    </div>
+    <div class="output-chip">
+      <div class="chip-icon">📋</div>
+      <div class="chip-label">Action Advisories</div>
+      <div class="chip-sub">Simulated diversions & plans</div>
+    </div>
+  </div>
+
+  <!-- Compliance -->
+  <div class="compliance">
+    <strong>⚠️ SIMULATION & ADVISORY ONLY</strong><br>
+    All actions, diversion plans, signal adjustments, and infrastructure suggestions are simulated. No live signal control, camera access, GPS integration, roadside sensors, or municipal infrastructure access.
+  </div>
+
+</div>
+</body>
+</html>
