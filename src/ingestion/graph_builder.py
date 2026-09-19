@@ -1,11 +1,7 @@
 """
 Road network graph construction module.
-
-Builds a NetworkX DiGraph from the NEURAX Smart Cities dataset,
-attaching node/edge attributes, signal plans, turn restrictions,
-and OD demand profiles. Provides utility functions for querying
-the graph and a folium-based HTML map visualizer.
 """
+from __future__ import annotations
 
 import os
 import pickle
@@ -182,7 +178,11 @@ def visualize_network(G: nx.DiGraph, output_path: str | os.PathLike) -> None:
 
     Nodes are circle markers; edges are polylines coloured by road_class.
     """
-    import folium
+    try:
+        import folium
+    except ImportError:
+        print("  [WARN] folium not installed — skipping HTML map visualization.")
+        return
 
     # Centre map on the mean lat/lon.
     lats = [d["lat"] for _, d in G.nodes(data=True) if "lat" in d]

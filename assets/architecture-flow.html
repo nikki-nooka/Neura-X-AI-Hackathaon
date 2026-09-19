@@ -3,304 +3,526 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Architecture Flow</title>
+<title>System Architecture Flow — NeuraX Traffic Intelligence</title>
 <style>
+  :root {
+    --bg: #090d16;
+    --card-bg: rgba(18, 24, 38, 0.75);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hover-border: rgba(99, 102, 241, 0.4);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a855f7;
+    --accent-amber: #fbbf24;
+    --accent-emerald: #34d399;
+    --accent-rose: #fb7185;
+    --accent-cyan: #22d3ee;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0e1a; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 40px 20px; min-height: 100vh; }
-  .title { text-align: center; color: #e2e8f0; font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
-  .subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 48px; }
-  .flow-container { max-width: 1100px; margin: 0 auto; position: relative; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
+    padding: 32px 24px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
 
-  /* Main flow row */
-  .flow-row { display: flex; align-items: stretch; justify-content: center; gap: 0; margin-bottom: 32px; flex-wrap: nowrap; }
-  .flow-row.secondary { margin-top: 16px; }
+  .container {
+    width: 100%;
+    max-width: 1040px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
 
-  /* Cards */
-  .card {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid #334155;
-    border-radius: 16px;
-    padding: 20px 18px;
-    min-width: 170px;
-    max-width: 200px;
-    flex: 1;
+  /* Header */
+  .header {
+    text-align: center;
+    padding-bottom: 8px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+  .badge-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    box-shadow: 0 0 8px var(--accent-blue);
+  }
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 13px;
+    max-width: 620px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* Data Inputs Pill Box */
+  .data-strip {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    backdrop-filter: blur(12px);
+  }
+  .strip-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pill {
+    font-size: 11px;
+    font-weight: 500;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 5px 10px;
+    transition: all 0.2s;
+  }
+  .pill:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+  }
+  .pill strong { color: var(--accent-amber); font-weight: 600; }
+
+  /* Pipeline Stages */
+  .stage-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     position: relative;
-    transition: all 0.3s ease;
-  }
-  .card:hover { border-color: #60a5fa; box-shadow: 0 0 24px rgba(96, 165, 250, 0.15); transform: translateY(-2px); }
-  .card-icon { font-size: 28px; margin-bottom: 10px; }
-  .card-title { color: #f1f5f9; font-size: 13px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .card-desc { color: #94a3b8; font-size: 11.5px; line-height: 1.5; }
-  .card-tag {
-    display: inline-block; margin-top: 10px; padding: 3px 10px;
-    border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
   }
 
-  /* Color themes per stage */
-  .stage-ingest { border-left: 3px solid #f59e0b; }
-  .stage-ingest .card-tag { background: rgba(245,158,11,0.15); color: #f59e0b; }
-  .stage-state { border-left: 3px solid #ef4444; }
-  .stage-state .card-tag { background: rgba(239,68,68,0.15); color: #ef4444; }
-  .stage-forecast { border-left: 3px solid #8b5cf6; }
-  .stage-forecast .card-tag { background: rgba(139,92,246,0.15); color: #8b5cf6; }
-  .stage-advisory { border-left: 3px solid #22c55e; }
-  .stage-advisory .card-tag { background: rgba(34,197,94,0.15); color: #22c55e; }
-  .stage-infra { border-left: 3px solid #06b6d4; }
-  .stage-infra .card-tag { background: rgba(6,182,212,0.15); color: #06b6d4; }
-  .stage-ui { border-left: 3px solid #ec4899; }
-  .stage-ui .card-tag { background: rgba(236,72,153,0.15); color: #ec4899; }
-
-  /* Arrows */
-  .arrow {
-    display: flex; align-items: center; justify-content: center;
-    min-width: 40px; color: #475569; font-size: 22px; flex-shrink: 0;
+  .stage-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    backdrop-filter: blur(16px);
+    transition: all 0.25s ease;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: center;
   }
-  .arrow-down {
-    text-align: center; color: #475569; font-size: 28px; margin: 8px 0;
+  .stage-card:hover {
+    border-color: var(--card-hover-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
   }
 
-  /* Section headers */
-  .section-label {
-    text-align: center; margin: 40px 0 20px;
-    color: #475569; font-size: 12px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 2px;
-    display: flex; align-items: center; gap: 16px; justify-content: center;
+  .stage-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding-right: 16px;
   }
-  .section-label::before, .section-label::after {
-    content: ''; height: 1px; width: 80px; background: #1e293b;
+  .stage-num {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
-
-  /* Bottom output cards */
-  .outputs { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
-  .output-chip {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border: 1px solid #334155; border-radius: 12px;
-    padding: 14px 20px; text-align: center; min-width: 140px;
+  .stage-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .output-chip:hover { border-color: #ec4899; }
-  .output-chip .chip-icon { font-size: 22px; margin-bottom: 6px; }
-  .output-chip .chip-label { color: #e2e8f0; font-size: 12px; font-weight: 600; }
-  .output-chip .chip-sub { color: #64748b; font-size: 10px; margin-top: 3px; }
-
-  /* Data sources banner */
-  .data-banner {
-    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px;
-  }
-  .data-pill {
-    background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
-    border-radius: 20px; padding: 6px 14px; color: #f59e0b;
-    font-size: 11px; font-weight: 500;
+  .stage-summary {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
   }
 
-  /* Compliance banner */
-  .compliance {
-    margin-top: 40px; text-align: center; padding: 16px;
-    background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.15);
-    border-radius: 12px; color: #94a3b8; font-size: 11px; line-height: 1.6;
+  /* Stage Steps Inside Grid */
+  .step-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
   }
-  .compliance strong { color: #ef4444; }
+  .step-item {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: all 0.2s;
+  }
+  .step-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .step-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .step-file {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9.5px;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .step-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  /* Color accents per stage */
+  .st-1 .stage-num { color: var(--accent-amber); }
+  .st-1:hover { border-color: rgba(251, 191, 36, 0.3); }
+
+  .st-2 .stage-num { color: var(--accent-rose); }
+  .st-2:hover { border-color: rgba(251, 113, 133, 0.3); }
+
+  .st-3 .stage-num { color: var(--accent-purple); }
+  .st-3:hover { border-color: rgba(168, 85, 247, 0.3); }
+
+  .st-4 .stage-num { color: var(--accent-emerald); }
+  .st-4:hover { border-color: rgba(52, 211, 153, 0.3); }
+
+  .st-5 .stage-num { color: var(--accent-cyan); }
+  .st-5:hover { border-color: rgba(34, 211, 238, 0.3); }
+
+  /* Output Chips Grid */
+  .output-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .output-box {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .output-box:hover {
+    border-color: rgba(56, 189, 248, 0.4);
+    transform: translateY(-2px);
+  }
+  .out-icon { font-size: 22px; margin-bottom: 6px; }
+  .out-title { font-size: 12px; font-weight: 600; color: #f1f5f9; }
+  .out-sub { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+  /* Footer Notice */
+  .footer-notice {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.12);
+    line-height: 1.5;
+  }
+  .footer-notice strong { color: #f87171; }
+
+  @media (max-width: 768px) {
+    .stage-card {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .stage-meta {
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-right: 0;
+      padding-bottom: 10px;
+    }
+  }
 </style>
 </head>
 <body>
 
-<div class="title">🚦 Urban Traffic Intelligence System</div>
-<div class="subtitle">End-to-End Architecture Flow — Software-Only Decision Support</div>
+<div class="container">
 
-<div class="flow-container">
-
-  <!-- Data Sources -->
-  <div class="section-label">📡 Data Sources (Organizer-Provided)</div>
-  <div class="data-banner">
-    <span class="data-pill">traffic_train.csv (1.9M rows)</span>
-    <span class="data-pill">network.csv (436 segments)</span>
-    <span class="data-pill">nodes.csv (120 junctions)</span>
-    <span class="data-pill">incidents.csv (49 events)</span>
-    <span class="data-pill">signal_plans.csv (89 signals)</span>
-    <span class="data-pill">context.csv (weather/events)</span>
-    <span class="data-pill">od_demand.csv (1500 OD pairs)</span>
-    <span class="data-pill">roadworks.csv</span>
-    <span class="data-pill">turn_restrictions.csv</span>
-    <span class="data-pill">planning_candidates.csv (90)</span>
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">
+      <div class="badge-pulse"></div>
+      Neurax Hackathon 3.0 · Smart Cities Domain
+    </div>
+    <div class="title">Urban Traffic Flow & Incident Intelligence</div>
+    <div class="subtitle">Autonomous AI Decision-Support System for Hyderabad-Scale Mixed Traffic Networks</div>
   </div>
 
-  <div class="arrow-down">⬇</div>
-
-  <!-- Stage 1: Ingestion + Cleaning -->
-  <div class="section-label">Stage 1 — Ingestion & Cleaning</div>
-  <div class="flow-row">
-    <div class="card stage-ingest">
-      <div class="card-icon">🧹</div>
-      <div class="card-title">Data Cleaner</div>
-      <div class="card-desc">Fix 6 noise types: missing values, duplicates, spikes, stuck sensors, negatives, row shuffle</div>
-      <span class="card-tag">cleaner.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-ingest">
-      <div class="card-icon">🕸️</div>
-      <div class="card-title">Graph Builder</div>
-      <div class="card-desc">NetworkX DiGraph from road network with signals, turns, OD demand, bottleneck flags</div>
-      <span class="card-tag">graph_builder.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-ingest">
-      <div class="card-icon">⚙️</div>
-      <div class="card-title">Feature Engine</div>
-      <div class="card-desc">Temporal lags, rolling stats, weather joins, roadwork flags, signal features</div>
-      <span class="card-tag">feature_eng.py</span>
+  <!-- Raw Data Inputs -->
+  <div class="data-strip">
+    <div class="strip-label">📦 Ingested Datasets (17 CSVs · 1.88M Records · 436 Segments · 120 Nodes)</div>
+    <div class="pills">
+      <div class="pill"><strong>traffic_train.csv</strong> 1.88M rows</div>
+      <div class="pill"><strong>network.csv</strong> 436 edges</div>
+      <div class="pill"><strong>nodes.csv</strong> 120 junctions</div>
+      <div class="pill"><strong>signal_plans.csv</strong> 89 signals</div>
+      <div class="pill"><strong>incidents.csv</strong> 49 events</div>
+      <div class="pill"><strong>context.csv</strong> Weather & events</div>
+      <div class="pill"><strong>od_demand.csv</strong> 1,500 pairs</div>
+      <div class="pill"><strong>roadworks.csv</strong> Closures</div>
+      <div class="pill"><strong>turn_restrictions.csv</strong> 61 turns</div>
+      <div class="pill"><strong>planning_candidates.csv</strong> 90 upgrades</div>
     </div>
   </div>
 
-  <div class="arrow-down">⬇</div>
+  <!-- Pipeline Stages -->
+  <div class="stage-grid">
 
-  <!-- Stage 2: State Engine -->
-  <div class="section-label">Stage 2 — Network State Engine</div>
-  <div class="flow-row">
-    <div class="card stage-state">
-      <div class="card-icon">🚥</div>
-      <div class="card-title">Congestion Tracker</div>
-      <div class="card-desc">Classify every segment: Free Flow → Moderate → Heavy → Gridlock. Compute TTI per reading</div>
-      <span class="card-tag">congestion_tracker.py</span>
+    <!-- Stage 1 -->
+    <div class="stage-card st-1">
+      <div class="stage-meta">
+        <span class="stage-num">Stage 01</span>
+        <span class="stage-name">🧹 Ingestion & Clean</span>
+        <span class="stage-summary">Data cleansing, topology parsing, and spatio-temporal feature engineering.</span>
+      </div>
+      <div class="step-row">
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">6-Noise Cleanser</span>
+            <span class="step-file">cleaner.py</span>
+          </div>
+          <div class="step-desc">Fixes row shuffle, duplicates, negative readings, spikes (>4σ), stuck sensors, missing values.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Graph Topology</span>
+            <span class="step-file">graph_builder.py</span>
+          </div>
+          <div class="step-desc">NetworkX DiGraph with signal plans, turn restrictions, OD flows, and geometry attributes.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Feature Fusion</span>
+            <span class="step-file">feature_eng.py</span>
+          </div>
+          <div class="step-desc">Lags, rolling stats, weather integration, active roadwork fractions, and signal phases.</div>
+        </div>
+      </div>
     </div>
-    <div class="arrow">→</div>
-    <div class="card stage-state">
-      <div class="card-icon">🔍</div>
-      <div class="card-title">Anomaly Detector</div>
-      <div class="card-desc">Statistical + ML detection of unusual speed/flow drops. Incident signature matching</div>
-      <span class="card-tag">anomaly_detector.py</span>
+
+    <!-- Stage 2 -->
+    <div class="stage-card st-2">
+      <div class="stage-meta">
+        <span class="stage-num">Stage 02</span>
+        <span class="stage-name">🚦 State Engine</span>
+        <span class="stage-summary">Continuous network state estimation, anomaly scoring, and spillback path tracing.</span>
+      </div>
+      <div class="step-row">
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Congestion Index</span>
+            <span class="step-file">congestion_tracker.py</span>
+          </div>
+          <div class="step-desc">4-tier categorization (Free-Flow, Moderate, Heavy, Gridlock) + Travel Time Index (TTI).</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Anomaly Detector</span>
+            <span class="step-file">anomaly_detector.py</span>
+          </div>
+          <div class="step-desc">Statistical 3σ baselines + ML Random Forest classifier (F1=0.982) for incident types.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Spillback Tracer</span>
+            <span class="step-file">spillback_tracer.py</span>
+          </div>
+          <div class="step-desc">BFS propagation tree calculating upstream queue reach and arrival time estimates.</div>
+        </div>
+      </div>
     </div>
-    <div class="arrow">→</div>
-    <div class="card stage-state">
-      <div class="card-icon">🌊</div>
-      <div class="card-title">Spillback Tracer</div>
-      <div class="card-desc">BFS on road graph to trace congestion propagation to upstream segments with timing</div>
-      <span class="card-tag">spillback_tracer.py</span>
+
+    <!-- Stage 3 -->
+    <div class="stage-card st-3">
+      <div class="stage-meta">
+        <span class="stage-num">Stage 03</span>
+        <span class="stage-name">🔮 Forecasting</span>
+        <span class="stage-summary">Multi-horizon prediction across 15, 30, 45, and 60-minute forecast windows.</span>
+      </div>
+      <div class="step-row">
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">LightGBM Model</span>
+            <span class="step-file">lightgbm_baseline.py</span>
+          </div>
+          <div class="step-desc">Segment-level gradient boosting with temporal lags and weather/event context.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">ST-GNN Model</span>
+            <span class="step-file">stgnn_model.py</span>
+          </div>
+          <div class="step-desc">Spatial-temporal graph neural network capturing propagation across junctions.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Weighted Ensemble</span>
+            <span class="step-file">ensemble.py</span>
+          </div>
+          <div class="step-desc">Blends tabular + graph predictions for minimum MAE/RMSE across all horizons.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div class="stage-card st-4">
+      <div class="stage-meta">
+        <span class="stage-num">Stage 04</span>
+        <span class="stage-name">🔀 Advisory Engine</span>
+        <span class="stage-summary">Actionable operational responses, diversion routing, and LLM briefing generation.</span>
+      </div>
+      <div class="step-row">
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Diversion Router</span>
+            <span class="step-file">diversion_planner.py</span>
+          </div>
+          <div class="step-desc">K-shortest paths respecting turn limits, balanced by corridor spare capacity.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Signal Tuning</span>
+            <span class="step-file">signal_optimizer.py</span>
+          </div>
+          <div class="step-desc">Dynamic green-ratio recommendations to meter inflow before congestion onset.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Groq LLM Briefings</span>
+            <span class="step-file">briefing_generator.py</span>
+          </div>
+          <div class="step-desc">Llama 3.3 70B natural-language command center reports (English, Hindi, Telugu).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 5 -->
+    <div class="stage-card st-5">
+      <div class="stage-meta">
+        <span class="stage-num">Stage 05</span>
+        <span class="stage-name">🏗️ Infrastructure</span>
+        <span class="stage-summary">Data-driven bottleneck detection and counterfactual before/after impact simulation.</span>
+      </div>
+      <div class="step-row">
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Bottleneck Finder</span>
+            <span class="step-file">bottleneck_detector.py</span>
+          </div>
+          <div class="step-desc">Pinpoints recurring structural bottlenecks from 15 days of historical peak hours.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">What-If Simulator</span>
+            <span class="step-file">intervention_simulator.py</span>
+          </div>
+          <div class="step-desc">Simulates capacity deltas on all 90 planning candidates across 30 scenario windows.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-header">
+            <span class="step-title">Cost-Benefit ROI</span>
+            <span class="step-file">cost_benefit_analyzer.py</span>
+          </div>
+          <div class="step-desc">Ranks infrastructure projects by delay reduction per unit cost index.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Decision Support Capabilities -->
+  <div class="output-grid">
+    <div class="output-box">
+      <div class="out-icon">🌐</div>
+      <div class="out-title">3D Globe & Twin</div>
+      <div class="out-sub">Elevation & particle flows</div>
+    </div>
+    <div class="output-box">
+      <div class="out-icon">🗺️</div>
+      <div class="out-title">Interactive Map</div>
+      <div class="out-sub">Live congestion & spillback</div>
+    </div>
+    <div class="output-box">
+      <div class="out-icon">🌍</div>
+      <div class="out-title">Multi-Lingual</div>
+      <div class="out-sub">EN / HI / TE briefings</div>
+    </div>
+    <div class="output-box">
+      <div class="out-icon">📊</div>
+      <div class="out-title">Static Reports</div>
+      <div class="out-sub">PDF/PNG graphs & charts</div>
+    </div>
+    <div class="output-box">
+      <div class="out-icon">🎮</div>
+      <div class="out-title">What-If Console</div>
+      <div class="out-sub">Interactive scenarios</div>
+    </div>
+    <div class="output-box">
+      <div class="out-icon">🚑</div>
+      <div class="out-title">Emergency Layer</div>
+      <div class="out-sub">Golden hour delay metrics</div>
     </div>
   </div>
 
-  <div class="arrow-down">⬇</div>
-
-  <!-- Stage 3: Forecasting -->
-  <div class="section-label">Stage 3 — Multi-Horizon Forecasting (15/30/45/60 min)</div>
-  <div class="flow-row">
-    <div class="card stage-forecast">
-      <div class="card-icon">📊</div>
-      <div class="card-title">LightGBM Baseline</div>
-      <div class="card-desc">Gradient boosting per segment × horizon. Fast, interpretable, strong baseline</div>
-      <span class="card-tag">lightgbm_baseline.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-forecast">
-      <div class="card-icon">🧠</div>
-      <div class="card-title">ST-GNN Model</div>
-      <div class="card-desc">Spatial-Temporal Graph Neural Network — captures cross-segment dependencies</div>
-      <span class="card-tag">stgnn_model.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-forecast">
-      <div class="card-icon">🎯</div>
-      <div class="card-title">Ensemble</div>
-      <div class="card-desc">Weighted blend of tabular + graph models. Optimized on validation MAE/RMSE</div>
-      <span class="card-tag">ensemble.py</span>
-    </div>
-  </div>
-
-  <div class="arrow-down">⬇</div>
-
-  <!-- Stage 4: Advisory -->
-  <div class="section-label">Stage 4 — Operational Advisory Engine</div>
-  <div class="flow-row">
-    <div class="card stage-advisory">
-      <div class="card-icon">🔀</div>
-      <div class="card-title">Diversion Planner</div>
-      <div class="card-desc">K-shortest paths respecting turn restrictions, weighted by spare capacity</div>
-      <span class="card-tag">diversion_planner.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-advisory">
-      <div class="card-icon">🚦</div>
-      <div class="card-title">Signal Optimizer</div>
-      <div class="card-desc">Green ratio & offset tuning to meter inflow before predicted congestion</div>
-      <span class="card-tag">signal_optimizer.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-advisory">
-      <div class="card-icon">📝</div>
-      <div class="card-title">LLM Briefing</div>
-      <div class="card-desc">Groq Llama 3.3 70B generates plain-English situational reports with evidence</div>
-      <span class="card-tag">briefing_generator.py</span>
-    </div>
-  </div>
-
-  <div class="arrow-down">⬇</div>
-
-  <!-- Stage 5: Infrastructure -->
-  <div class="section-label">Stage 5 — Infrastructure Intervention Simulator</div>
-  <div class="flow-row">
-    <div class="card stage-infra">
-      <div class="card-icon">📍</div>
-      <div class="card-title">Bottleneck Finder</div>
-      <div class="card-desc">Identify persistent geometric/capacity limitations from 15 days of patterns</div>
-      <span class="card-tag">bottleneck_detector.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-infra">
-      <div class="card-icon">🔬</div>
-      <div class="card-title">What-If Simulator</div>
-      <div class="card-desc">Counterfactual: apply 90 planning candidates, measure before/after network impact</div>
-      <span class="card-tag">intervention_simulator.py</span>
-    </div>
-    <div class="arrow">→</div>
-    <div class="card stage-infra">
-      <div class="card-icon">💰</div>
-      <div class="card-title">Cost-Benefit Ranker</div>
-      <div class="card-desc">Rank interventions by (delay_reduction × vehicles) / cost_index</div>
-      <span class="card-tag">cost_benefit_analyzer.py</span>
-    </div>
-  </div>
-
-  <div class="arrow-down">⬇</div>
-
-  <!-- Outputs -->
-  <div class="section-label">🖥️ Decision Support Outputs</div>
-  <div class="outputs">
-    <div class="output-chip">
-      <div class="chip-icon">🌐</div>
-      <div class="chip-label">3D Globe View</div>
-      <div class="chip-sub">Interactive network visualization</div>
-    </div>
-    <div class="output-chip">
-      <div class="chip-icon">🗺️</div>
-      <div class="chip-label">Live Network Map</div>
-      <div class="chip-sub">Congestion + spillback animation</div>
-    </div>
-    <div class="output-chip">
-      <div class="chip-icon">📊</div>
-      <div class="chip-label">Static Reports</div>
-      <div class="chip-sub">PDF/PNG graphs & tables</div>
-    </div>
-    <div class="output-chip">
-      <div class="chip-icon">🌍</div>
-      <div class="chip-label">Multi-Lingual</div>
-      <div class="chip-sub">EN / HI / TE briefings</div>
-    </div>
-    <div class="output-chip">
-      <div class="chip-icon">🎮</div>
-      <div class="chip-label">What-If Console</div>
-      <div class="chip-sub">Interactive scenario testing</div>
-    </div>
-    <div class="output-chip">
-      <div class="chip-icon">📋</div>
-      <div class="chip-label">Action Advisories</div>
-      <div class="chip-sub">Simulated diversions & plans</div>
-    </div>
-  </div>
-
-  <!-- Compliance -->
-  <div class="compliance">
-    <strong>⚠️ SIMULATION & ADVISORY ONLY</strong><br>
-    All actions, diversion plans, signal adjustments, and infrastructure suggestions are simulated. No live signal control, camera access, GPS integration, roadside sensors, or municipal infrastructure access.
+  <!-- Regulatory Compliance Notice -->
+  <div class="footer-notice">
+    <strong>⚖️ Hackathon Compliance Note:</strong> All actions, diversion plans, signal recommendations, and construction proposals are <strong>strictly simulated and advisory</strong>. No live municipal infrastructure access, signal hardware control, or physical road modifications are executed.
   </div>
 
 </div>
+
 </body>
 </html>
