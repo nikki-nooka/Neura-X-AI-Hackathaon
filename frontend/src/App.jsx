@@ -3,24 +3,18 @@ import {
   Activity,
   AlertTriangle,
   BarChart2,
-  BarChart3,
-  Bot,
   Building2,
   Calendar,
   Compass,
-  Database,
-  Flame,
-  Globe2,
+  Cpu,
   HeartPulse,
   Home,
   Layers,
   LineChart,
-  MapPin,
   Navigation,
   Radio,
   Settings,
   Shield,
-  ShieldCheck,
   Sliders,
   Sparkles,
   Zap,
@@ -28,17 +22,15 @@ import {
 
 import AIBriefingCard from './components/AIBriefingCard';
 import BottomSection from './components/BottomSection';
-import BriefingView from './components/BriefingView';
 import CriticalAlertsCard from './components/CriticalAlertsCard';
-import DiversionView from './components/DiversionView';
 import EcoBanner from './components/EcoBanner';
 import EmergencyView from './components/EmergencyView';
 import ForecastView from './components/ForecastView';
 import HeaderBar from './components/HeaderBar';
 import InfrastructureView from './components/InfrastructureView';
+import InterventionModal from './components/InterventionModal';
 import LiveTrafficMapCard from './components/LiveTrafficMapCard';
 import MetricCards from './components/MetricCards';
-import SpillbackView from './components/SpillbackView';
 import WelcomeBanner from './components/WelcomeBanner';
 import { fetchKPIs, fetchTopology } from './services/api';
 
@@ -47,47 +39,38 @@ export default function App() {
   const [topology, setTopology] = useState(null);
   const [kpis, setKpis] = useState(null);
   const [selectedSegment, setSelectedSegment] = useState('R0435');
-  const [emergencySegments, setEmergencySegments] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeCorridorHighlight, setActiveCorridorHighlight] = useState([]);
 
   useEffect(() => {
     fetchTopology().then(setTopology).catch(console.error);
     fetchKPIs().then(setKpis).catch(console.error);
   }, []);
 
+  // Focused 4 high-impact views
   const navMenuItems = [
     { id: 'command_center', label: 'Command Center', icon: Home },
-    { id: 'network_map', label: 'Network Map', icon: MapPin },
-    { id: 'traffic_analytics', label: 'Traffic Analytics', icon: BarChart2 },
-    { id: 'forecast', label: 'Forecast & Prediction', icon: LineChart },
-    { id: 'spillback', label: 'Incidents & Spillback', icon: AlertTriangle },
-    { id: 'response_sim', label: 'Response Simulator', icon: HeartPulse },
+    { id: 'emergency', label: 'Emergency Green Wave', icon: HeartPulse, emergency: true },
+    { id: 'forecast', label: 'Traffic Predictor (15-60m)', icon: LineChart },
     { id: 'infrastructure', label: 'Infrastructure Planner', icon: Building2 },
-    { id: 'resilience', label: 'Network Resilience', icon: Shield },
-    { id: 'weekly_intel', label: 'Weekly Intelligence', icon: Calendar },
-  ];
-
-  const toolsItems = [
-    { id: 'ai_assistant', label: 'AI Assistant', icon: Sparkles },
-    { id: 'data_explorer', label: 'Data Explorer', icon: Database },
   ];
 
   return (
     <div className="app-shell">
-      {/* 1. Left Dark Tactical Sidebar */}
+      {/* 1. Clean Tactical Left Sidebar */}
       <aside className="sidebar">
         {/* Logo Branding */}
         <div className="sidebar-logo">
-          {/* NeuraX Icon */}
           <div style={{
-            width: 32,
-            height: 32,
-            borderRadius: '8px',
+            width: 34,
+            height: 34,
+            borderRadius: '9px',
             background: 'linear-gradient(135deg, #2563eb, #8b5cf6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: 800,
-            fontSize: '16px',
+            fontSize: '17px',
             color: '#ffffff',
             boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)',
           }}>
@@ -97,14 +80,15 @@ export default function App() {
             <div style={{ fontWeight: 800, fontSize: '16px', color: '#ffffff', letterSpacing: '-0.2px' }}>
               NeuraX
             </div>
-            <div style={{ fontSize: '9px', color: '#64748b', lineHeight: 1.1 }}>
-              Smarter Cities<br />Smoother Tomorrows.
+            <div style={{ fontSize: '10px', color: '#64748b' }}>
+              Smarter Cities · Hyderabad
             </div>
           </div>
         </div>
 
-        {/* Navigation Menu */}
+        {/* Primary Navigation Menu */}
         <nav className="sidebar-nav">
+          <div className="sidebar-section-title">Operations</div>
           {navMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeMenu === item.id;
@@ -114,31 +98,14 @@ export default function App() {
                 className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                 onClick={() => setActiveMenu(item.id)}
               >
-                <Icon size={16} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-
-          {/* Tools Section */}
-          <div className="sidebar-section-title">Tools</div>
-          {toolsItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeMenu === item.id;
-            return (
-              <button
-                key={item.id}
-                className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-                onClick={() => setActiveMenu(item.id)}
-              >
-                <Icon size={16} />
+                <Icon size={16} color={isActive ? '#ffffff' : item.emergency ? 'var(--status-red)' : 'var(--text-sidebar)'} />
                 <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Sidebar Footer (City Badge + User Profile) */}
+        {/* Sidebar Footer */}
         <div className="sidebar-footer">
           {/* Hyderabad City Card */}
           <div style={{
@@ -164,7 +131,7 @@ export default function App() {
             </div>
             <div>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#f1f5f9' }}>Hyderabad</div>
-              <div style={{ fontSize: '10px', color: '#64748b' }}>Smart City Network</div>
+              <div style={{ fontSize: '10px', color: '#64748b' }}>120 Nodes · 436 Links</div>
             </div>
           </div>
 
@@ -199,55 +166,58 @@ export default function App() {
         </div>
       </aside>
 
-      {/* 2. Main Wrapper */}
+      {/* 2. Main Executive Viewport */}
       <div className="main-wrapper">
         {/* Top Navbar */}
         <HeaderBar />
 
-        {/* Dashboard Scrollable Viewport */}
+        {/* Dashboard Canvas */}
         <main className="dashboard-viewport">
           {activeMenu === 'command_center' && (
             <>
               {/* Row 1: Welcome Banner */}
               <WelcomeBanner simTime="06:42 PM" />
 
-              {/* Row 2: 6 Metric Cards */}
+              {/* Row 2: 6 KPI Metric Cards */}
               <MetricCards kpis={kpis} />
 
-              {/* Row 3: Main Map + AI Briefing & Critical Alerts */}
+              {/* Row 3: Live Map (Center) + AI Briefing & Critical Alerts (Right) */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1.9fr 1.1fr',
                 gap: '16px',
               }}>
-                {/* Left: Map */}
+                {/* Left: Map with Segment Inspector */}
                 <LiveTrafficMapCard
                   topology={topology}
                   selectedSegment={selectedSegment}
-                  onSelectSegment={(seg) => setSelectedSegment(seg)}
-                  onOpenDetails={() => setActiveMenu('forecast')}
-                  onSimulateResponse={() => setActiveMenu('response_sim')}
+                  onSelectSegment={(seg) => {
+                    setSelectedSegment(seg);
+                  }}
+                  onOpenDetails={() => setModalOpen(true)}
+                  onSimulateResponse={() => setModalOpen(true)}
                 />
 
-                {/* Right: AI Situation Briefing + Critical Alerts */}
+                {/* Right: AI Briefing + Critical Alerts */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <AIBriefingCard
-                    onViewRecommendation={() => setActiveMenu('spillback')}
-                    onWhyItMatters={() => setActiveMenu('ai_assistant')}
+                    onViewRecommendation={() => setModalOpen(true)}
+                    onWhyItMatters={() => setModalOpen(true)}
                   />
                   <CriticalAlertsCard
                     onSelectAlert={(seg) => {
                       setSelectedSegment(seg);
-                      setActiveMenu('command_center');
+                      setModalOpen(true);
                     }}
                   />
                 </div>
               </div>
 
-              {/* Row 4: Traffic Trend (Citywide) + Top Congested Corridors + City in Numbers */}
+              {/* Row 4: Citywide Traffic Trend + Top Congested Corridors + City in Numbers */}
               <BottomSection
                 onSelectCorridor={(code) => {
                   setSelectedSegment(code);
+                  setModalOpen(true);
                 }}
               />
 
@@ -256,59 +226,46 @@ export default function App() {
             </>
           )}
 
-          {/* Sub-Views accessible via Sidebar */}
-          {activeMenu === 'network_map' && (
-            <LiveTrafficMapCard
-              topology={topology}
-              selectedSegment={selectedSegment}
-              onSelectSegment={(seg) => setSelectedSegment(seg)}
-              onOpenDetails={() => setActiveMenu('forecast')}
-              onSimulateResponse={() => setActiveMenu('response_sim')}
-            />
+          {/* Dedicated Emergency Green Wave View */}
+          {activeMenu === 'emergency' && (
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <EmergencyView
+                onEmergencyDispatched={(corridorSegs) => {
+                  setActiveCorridorHighlight(corridorSegs);
+                  setActiveMenu('command_center');
+                }}
+              />
+            </div>
           )}
 
-          {activeMenu === 'spillback' && (
-            <SpillbackView activeSegment={selectedSegment} />
-          )}
-
+          {/* Dedicated Traffic Forecaster View */}
           {activeMenu === 'forecast' && (
-            <ForecastView activeSegment={selectedSegment} />
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <ForecastView activeSegment={selectedSegment} />
+            </div>
           )}
 
-          {activeMenu === 'response_sim' && (
-            <EmergencyView
-              onEmergencyDispatched={(segs) => {
-                setEmergencySegments(segs);
-                setActiveMenu('command_center');
-              }}
-            />
-          )}
-
+          {/* Dedicated Infrastructure Planner View */}
           {activeMenu === 'infrastructure' && (
-            <InfrastructureView />
-          )}
-
-          {activeMenu === 'ai_assistant' && (
-            <BriefingView activeSegment={selectedSegment} />
-          )}
-
-          {activeMenu === 'traffic_analytics' && (
-            <BottomSection onSelectCorridor={(c) => setSelectedSegment(c)} />
-          )}
-
-          {activeMenu === 'resilience' && (
-            <DiversionView activeSegment={selectedSegment} />
-          )}
-
-          {activeMenu === 'weekly_intel' && (
-            <InfrastructureView />
-          )}
-
-          {activeMenu === 'data_explorer' && (
-            <ForecastView activeSegment={selectedSegment} />
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <InfrastructureView />
+            </div>
           )}
         </main>
       </div>
+
+      {/* Actionable Incident Intervention Modal */}
+      <InterventionModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        segmentId={selectedSegment}
+        onApplyDetour={(detourSegs) => {
+          setActiveCorridorHighlight(detourSegs);
+        }}
+        onApplyEmergency={(emergencySegs) => {
+          setActiveCorridorHighlight(emergencySegs);
+        }}
+      />
     </div>
   );
 }
