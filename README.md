@@ -103,65 +103,63 @@ The dataset contains **6 types of realistic sensor noise** that must be handled:
 flowchart TD
     subgraph S0["1. RAW DATA INGESTION"]
         D1["traffic_train.csv (1.88M Sensor Rows)"]
-        D2["network.csv & nodes.csv (436 Links, 120 Nodes)"]
-        D3["signals.csv & turns.csv (Signal Plans & Turn Restrictions)"]
-        D4["context.csv & incidents.csv (Weather & Labeled Incidents)"]
-        D5["od_demand.csv & planning_candidates.csv (OD Pairs & 90 Projects)"]
+        D2["network.csv + nodes.csv (436 Links, 120 Nodes)"]
+        D3["signals.csv + turns.csv (Signal Plans, Turn Restrictions)"]
+        D4["context.csv + incidents.csv (Weather, 49 Incidents)"]
+        D5["od_demand.csv + planning_candidates.csv (1,500 OD Pairs, 90 Upgrades)"]
     end
 
-    subgraph S1["2. INGESTION & DATA CLEANING (src/ingestion)"]
-        C1["cleaner.py - 6-Noise Cleanser (Spikes, Duplicates, Stuck Sensors)"]
-        C2["graph_builder.py - NetworkX Road Topology & Capacities"]
-        C3["feature_eng.py - Spatio-Temporal Lags & Context Features"]
+    subgraph S1["2. INGESTION AND DATA CLEANING (src/ingestion)"]
+        C1["cleaner.py: 6-Noise Cleanser (Spikes, Duplicates, Stuck Sensors)"]
+        C2["graph_builder.py: NetworkX Road Topology and Capacities"]
+        C3["feature_eng.py: Spatio-Temporal Lags and Context Features"]
         C1 --> C2 --> C3
     end
 
     subgraph S2["3. REAL-TIME NETWORK STATE ENGINE (src/state_engine)"]
-        T1["congestion_tracker.py - 4-Tier Congestion Classification"]
-        T2["anomaly_detector.py - 3-Sigma Anomaly & Incident Classifier"]
-        T3["spillback_tracer.py - BFS Backward Queue Spillback Propagation"]
+        T1["congestion_tracker.py: 4-Tier Congestion Classification"]
+        T2["anomaly_detector.py: 3-Sigma Baseline + ML Incident Classifier"]
+        T3["spillback_tracer.py: BFS Queue Spillback Causal Chain"]
         T1 --> T2 --> T3
     end
 
     subgraph S3["4. MULTI-HORIZON FORECASTING (src/forecasting)"]
-        F1["lightgbm_baseline.py - Tabular Gradient Boosting"]
-        F2["stgnn_model.py - Spatial-Temporal Graph Neural Network"]
-        F3["ensemble.py - Blended Forecasts (15, 30, 45, 60 min)"]
+        F1["lightgbm_baseline.py: Tabular Gradient Boosting"]
+        F2["stgnn_model.py: Spatial-Temporal Graph Neural Network"]
+        F3["ensemble.py: Blended Forecasts (15, 30, 45, 60 min)"]
         F1 --> F3
         F2 --> F3
     end
 
-    subgraph S4["5. DECISION & INTERVENTION ENGINES"]
-        subgraph S4A["Tactical Advisory Engine (src/advisory)"]
-            A1["diversion_planner.py - K-Shortest Path Rerouting"]
-            A2["signal_optimizer.py - Dynamic Green Split Tuning"]
-            A3["briefing_generator.py - Groq Llama 3.3 LLM Briefings"]
-            A1 --> A2 --> A3
-        end
-
-        subgraph S4B["Strategic Infrastructure Engine (src/infrastructure)"]
-            I1["bottleneck_detector.py - Recurring Choke-Point Detection"]
-            I2["intervention_simulator.py - Before/After What-If Counterfactuals"]
-            I3["cost_benefit_analyzer.py - 90 Upgrade Candidates ROI Ranking"]
-            I1 --> I2 --> I3
-        end
+    subgraph S4["5. TACTICAL REAL-TIME ADVISORY (src/advisory)"]
+        A1["diversion_planner.py: K-Shortest Path Rerouting"]
+        A2["signal_optimizer.py: Dynamic Green Split Tuning"]
+        A3["briefing_generator.py: Groq Llama 3.3 LLM Briefings (EN/HI/TE)"]
+        A1 --> A2 --> A3
     end
 
-    subgraph S5["6. OPERATOR COMMAND CENTER (dashboard/app.py)"]
-        O1["Live 2D/3D Geospatial Map & Elevation View"]
+    subgraph S5["6. STRATEGIC INFRASTRUCTURE SIMULATOR (src/infrastructure)"]
+        I1["bottleneck_detector.py: Recurring Choke-Point Detection"]
+        I2["intervention_simulator.py: Before/After Counterfactual Flow Replay"]
+        I3["cost_benefit_analyzer.py: 90 Upgrade Candidates ROI Ranking"]
+        I1 --> I2 --> I3
+    end
+
+    subgraph S6["7. OPERATOR COMMAND CENTER (dashboard/app.py)"]
+        O1["Live 2D/3D Geospatial Map and Elevation View"]
         O2["Interactive What-If Scenario Console"]
-        O3["Real-Time Incident Alert & Spillback Feed"]
-        O4["Multi-Lingual Situation Reports (EN / HI / TE)"]
+        O3["Real-Time Incident Alert and Spillback Feed"]
+        O4["Actionable Multi-Lingual Decision Briefings"]
     end
 
-    %% Hierarchical Pipeline Flow
+    %% Hierarchical Flow
     S0 --> S1
     S1 --> S2
     S2 --> S3
-    S3 --> S4A
-    S3 --> S4B
-    S4A --> S5
-    S4B --> S5
+    S3 --> S4
+    S3 --> S5
+    S4 --> S6
+    S5 --> S6
 ```
 
 ### Project Structure
