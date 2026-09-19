@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/PyTorch-Graph_NN-EE4C2C?logo=pytorch&logoColor=white" alt="PyTorch">
   <img src="https://img.shields.io/badge/LightGBM-Forecasting-02569B" alt="LightGBM">
-  <img src="https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
+  <img src="https://img.shields.io/badge/FastAPI-REST_Engine-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/Groq-LLM_Briefings-F55036" alt="Groq">
   <img src="https://img.shields.io/badge/Status-Simulation_Only-orange" alt="Advisory Only">
 </p>
@@ -416,8 +416,11 @@ python -m src.advisory.diversion_planner
 python -m src.advisory.signal_optimizer
 python -m src.advisory.briefing_generator
 
-# 8. Launch Interactive Command Center Dashboard
-streamlit run dashboard/app.py
+# 8. Run Stage 5: Infrastructure intervention simulator
+python -m src.infrastructure.intervention_simulator
+
+# 9. Run Full System Audit Runner (Single-Command Verification)
+python evaluate_submission.py
 ```
 
 ---
@@ -430,13 +433,11 @@ streamlit run dashboard/app.py
 | **Data Processing** | Pandas, NumPy, SciPy |
 | **Graph & Network** | NetworkX, OSMnx |
 | **Geospatial** | GeoPandas, Shapely, Folium |
-| **Machine Learning** | Scikit-learn (RandomForest, IsolationForest), LightGBM |
+| **Machine Learning** | Scikit-learn (HistGradientBoosting, RandomForest, IsolationForest), LightGBM |
 | **Deep Learning** | PyTorch (Spatial-Temporal GNN) |
 | **LLM Briefings** | Groq API — Llama 3.3 70B (free tier) |
-| **3D Visualization** | Deck.gl / PyDeck |
-| **Dashboard** | Streamlit + Plotly |
 | **API Backend** | FastAPI + Uvicorn |
-| **Reports** | Matplotlib, Seaborn → PDF/PNG export |
+| **Verification & Tests**| Pytest Test Suite + `evaluate_submission.py` |
 
 ---
 

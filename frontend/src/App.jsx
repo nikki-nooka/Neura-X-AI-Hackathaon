@@ -33,6 +33,7 @@ import InterventionModal from './components/InterventionModal';
 import LiveTrafficMapCard from './components/LiveTrafficMapCard';
 import MetricCards from './components/MetricCards';
 import ResilienceView from './components/ResilienceView';
+import RoadsIntelligenceView from './components/RoadsIntelligenceView';
 import SpillbackView from './components/SpillbackView';
 import WeeklyView from './components/WeeklyView';
 import WelcomeBanner from './components/WelcomeBanner';
@@ -51,9 +52,10 @@ export default function App() {
     fetchKPIs().then(setKpis).catch(console.error);
   }, []);
 
-  // Complete 9 Command Center Navigation Sections
+  // Complete Command Center Navigation Sections
   const navMenuItems = [
     { id: 'command_center', label: 'Command Center', icon: Home },
+    { id: 'roads', label: '436 Roads Intelligence', icon: Layers },
     { id: 'network_map', label: 'Network Map', icon: Compass },
     { id: 'forecast', label: 'Traffic Predictor', icon: LineChart },
     { id: 'spillback', label: 'Incident & Spillback', icon: AlertTriangle },
@@ -233,6 +235,17 @@ export default function App() {
               {/* Row 5: Green Eco Banner */}
               <EcoBanner />
             </>
+          )}
+
+          {/* Dedicated 436 Roads Intelligence Directory View */}
+          {activeMenu === 'roads' && (
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <RoadsIntelligenceView
+                onSelectRoad={(seg) => setSelectedSegment(seg)}
+                onOpenModal={() => setModalOpen(true)}
+                onNavigateView={(viewId) => setActiveMenu(viewId)}
+              />
+            </div>
           )}
 
           {/* Dedicated Full Network Map View */}

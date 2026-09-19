@@ -139,3 +139,10 @@ export async function fetchWeeklySummary() {
   return res.json();
 }
 
+export async function fetchAllRoadsIntelligence() {
+  const res = await fetch(`${API_BASE}/network/all-roads-intelligence`);
+  if (!res.ok) throw new Error('Failed to fetch all roads intelligence');
+  return res.json();
+}
+
+
