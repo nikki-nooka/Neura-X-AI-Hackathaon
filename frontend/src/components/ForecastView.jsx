@@ -22,38 +22,53 @@ import {
 import { fetchForecast, fetchValidationMetrics } from '../services/api';
 
 export default function ForecastView({ activeSegment = 'R0435' }) {
-  const [segmentId, setSegmentId] = useState(activeSegment);
+  const [inputVal, setInputVal] = useState(activeSegment || 'R0435');
+  const [segmentId, setSegmentId] = useState(activeSegment || 'R0435');
   const [forecastData, setForecastData] = useState(null);
   const [scorecardData, setScorecardData] = useState(null);
   const [activeMetricTab, setActiveMetricTab] = useState('speed'); // 'speed' | 'flow' | 'congestion'
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (activeSegment) setSegmentId(activeSegment);
-  }, [activeSegment]);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const loadForecast = async (seg) => {
+    const target = (seg || inputVal || segmentId || 'R0435').trim().toUpperCase();
+    if (!target) return;
     setLoading(true);
+    setErrorMsg(null);
     try {
       const [fRes, vRes] = await Promise.all([
-        fetchForecast(seg),
-        fetchValidationMetrics(),
+        fetchForecast(target),
+        fetchValidationMetrics().catch(() => null),
       ]);
       setForecastData(fRes);
-      setScorecardData(vRes);
+      if (vRes) setScorecardData(vRes);
+      setSegmentId(target);
+      setInputVal(target);
+      setLastUpdated(new Date().toLocaleTimeString());
     } catch (err) {
-      console.error(err);
+      console.error('Forecast fetch failed:', err);
+      setErrorMsg(`Failed to load forecast for ${target}. Please ensure road ID is valid (e.g. R0435).`);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadForecast(segmentId);
-  }, [segmentId]);
+    if (activeSegment) {
+      setInputVal(activeSegment);
+      setSegmentId(activeSegment);
+      loadForecast(activeSegment);
+    } else {
+      loadForecast('R0435');
+    }
+  }, [activeSegment]);
 
   const current = forecastData?.current_observation;
   const horizons = forecastData?.horizons || [];
+
+  // Popular key corridors for quick testing
+  const quickCorridors = ['R0435', 'R0376', 'R0067', 'R0188', 'R0137', 'R0001'];
 
   // Prepare chart data including CURRENT (T=0) and future horizons (15, 30, 45, 60m)
   const chartData = [
@@ -85,19 +100,33 @@ export default function ForecastView({ activeSegment = 'R0435' }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Corridor Segment:</span>
+        {/* Input & Action Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {lastUpdated && (
+            <span style={{ fontSize: '11px', color: 'var(--status-green)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircle size={12} />
+              <span>Updated {lastUpdated}</span>
+            </span>
+          )}
+
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Road:</span>
           <input
             type="text"
-            value={segmentId}
-            onChange={(e) => setSegmentId(e.target.value.toUpperCase())}
+            value={inputVal}
+            onChange={(e) => setInputVal(e.target.value.toUpperCase())}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                loadForecast(inputVal);
+              }
+            }}
             placeholder="e.g. R0435"
             style={{
               background: 'var(--card-bg)',
               border: '1px solid var(--border-light)',
               borderRadius: '6px',
               color: 'var(--text-primary)',
-              padding: '6px 12px',
+              padding: '7px 12px',
               fontSize: '13px',
               width: '100px',
               fontFamily: 'monospace',
@@ -106,15 +135,52 @@ export default function ForecastView({ activeSegment = 'R0435' }) {
           />
           <button
             className="btn-primary"
-            onClick={() => loadForecast(segmentId)}
+            onClick={() => loadForecast(inputVal)}
             disabled={loading}
-            style={{ padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ padding: '7px 16px', display: 'flex', alignItems: 'center', gap: '6px', cursor: loading ? 'not-allowed' : 'pointer' }}
           >
             <RefreshCw size={13} className={loading ? 'spin' : ''} />
-            <span>Update Forecast</span>
+            <span>{loading ? 'Updating...' : 'Update Forecast'}</span>
           </button>
         </div>
       </div>
+
+      {/* Quick Corridor Selection Pills */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Quick Select:</span>
+        {quickCorridors.map((cId) => (
+          <button
+            key={cId}
+            onClick={() => {
+              setInputVal(cId);
+              loadForecast(cId);
+            }}
+            style={{
+              background: segmentId === cId ? 'var(--accent-blue)' : 'rgba(255,255,255,0.04)',
+              color: segmentId === cId ? '#ffffff' : 'var(--text-secondary)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '5px',
+              padding: '3px 9px',
+              fontSize: '11px',
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            {cId}
+          </button>
+        ))}
+      </div>
+
+      {/* Error Banner if any */}
+      {errorMsg && (
+        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--status-red)', borderRadius: '8px', padding: '10px 14px', color: 'var(--status-red)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>{errorMsg}</span>
+          <button onClick={() => loadForecast('R0435')} style={{ background: 'transparent', border: 'none', color: '#ffffff', textDecoration: 'underline', cursor: 'pointer', fontSize: '11px' }}>
+            Load Default (R0435)
+          </button>
+        </div>
+      )}
 
       {/* Row 1: Real Current State (Left) & 4 Future Horizons (Right) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2.8fr', gap: '16px' }}>
