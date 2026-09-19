@@ -110,3 +110,32 @@ export async function generateBriefing(payload) {
   if (!res.ok) throw new Error('Failed to generate briefing');
   return res.json();
 }
+
+export async function fetchValidationMetrics() {
+  const res = await fetch(`${API_BASE}/forecast/validation-metrics`);
+  if (!res.ok) throw new Error('Failed to fetch validation metrics');
+  return res.json();
+}
+
+export async function simulateResilienceClosure(segmentId, durationMin = 30) {
+  const res = await fetch(`${API_BASE}/resilience/simulate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ segment_id: segmentId, duration_min: durationMin }),
+  });
+  if (!res.ok) throw new Error('Failed to simulate network resilience closure');
+  return res.json();
+}
+
+export async function fetchTopCriticalSegments() {
+  const res = await fetch(`${API_BASE}/resilience/top-critical`);
+  if (!res.ok) throw new Error('Failed to fetch critical segments');
+  return res.json();
+}
+
+export async function fetchWeeklySummary() {
+  const res = await fetch(`${API_BASE}/intelligence/weekly-summary`);
+  if (!res.ok) throw new Error('Failed to fetch weekly intelligence summary');
+  return res.json();
+}
+

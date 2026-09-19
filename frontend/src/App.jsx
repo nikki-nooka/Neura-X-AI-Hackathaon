@@ -23,6 +23,7 @@ import {
 import AIBriefingCard from './components/AIBriefingCard';
 import BottomSection from './components/BottomSection';
 import CriticalAlertsCard from './components/CriticalAlertsCard';
+import DiversionView from './components/DiversionView';
 import EcoBanner from './components/EcoBanner';
 import EmergencyView from './components/EmergencyView';
 import ForecastView from './components/ForecastView';
@@ -31,6 +32,9 @@ import InfrastructureView from './components/InfrastructureView';
 import InterventionModal from './components/InterventionModal';
 import LiveTrafficMapCard from './components/LiveTrafficMapCard';
 import MetricCards from './components/MetricCards';
+import ResilienceView from './components/ResilienceView';
+import SpillbackView from './components/SpillbackView';
+import WeeklyView from './components/WeeklyView';
 import WelcomeBanner from './components/WelcomeBanner';
 import { fetchKPIs, fetchTopology } from './services/api';
 
@@ -47,12 +51,17 @@ export default function App() {
     fetchKPIs().then(setKpis).catch(console.error);
   }, []);
 
-  // Focused 4 high-impact views
+  // Complete 9 Command Center Navigation Sections
   const navMenuItems = [
     { id: 'command_center', label: 'Command Center', icon: Home },
+    { id: 'network_map', label: 'Network Map', icon: Compass },
+    { id: 'forecast', label: 'Traffic Predictor', icon: LineChart },
+    { id: 'spillback', label: 'Incident & Spillback', icon: AlertTriangle },
+    { id: 'response', label: 'Response Simulator', icon: Sliders },
     { id: 'emergency', label: 'Emergency Green Wave', icon: HeartPulse, emergency: true },
-    { id: 'forecast', label: 'Traffic Predictor (15-60m)', icon: LineChart },
     { id: 'infrastructure', label: 'Infrastructure Planner', icon: Building2 },
+    { id: 'resilience', label: 'Network Resilience', icon: Shield },
+    { id: 'weekly', label: 'Weekly Intelligence', icon: Calendar },
   ];
 
   return (
@@ -226,6 +235,36 @@ export default function App() {
             </>
           )}
 
+          {/* Dedicated Full Network Map View */}
+          {activeMenu === 'network_map' && (
+            <div className="clean-card" style={{ padding: '20px' }}>
+              <LiveTrafficMapCard
+                topology={topology}
+                selectedSegment={selectedSegment}
+                onSelectSegment={(seg) => setSelectedSegment(seg)}
+                onOpenDetails={() => setModalOpen(true)}
+                onSimulateResponse={() => setModalOpen(true)}
+              />
+            </div>
+          )}
+
+          {/* Dedicated Incident & Spillback View */}
+          {activeMenu === 'spillback' && (
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <SpillbackView
+                activeSegment={selectedSegment}
+                onHighlightSegments={(segs) => setActiveCorridorHighlight(segs)}
+              />
+            </div>
+          )}
+
+          {/* Dedicated Response Simulator View */}
+          {activeMenu === 'response' && (
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <DiversionView activeSegment={selectedSegment} />
+            </div>
+          )}
+
           {/* Dedicated Emergency Green Wave View */}
           {activeMenu === 'emergency' && (
             <div className="clean-card" style={{ padding: '24px' }}>
@@ -249,6 +288,20 @@ export default function App() {
           {activeMenu === 'infrastructure' && (
             <div className="clean-card" style={{ padding: '24px' }}>
               <InfrastructureView />
+            </div>
+          )}
+
+          {/* Dedicated Network Resilience View */}
+          {activeMenu === 'resilience' && (
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <ResilienceView defaultSegment={selectedSegment} />
+            </div>
+          )}
+
+          {/* Dedicated Weekly Intelligence View */}
+          {activeMenu === 'weekly' && (
+            <div className="clean-card" style={{ padding: '24px' }}>
+              <WeeklyView />
             </div>
           )}
         </main>

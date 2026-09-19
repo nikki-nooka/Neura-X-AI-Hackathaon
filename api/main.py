@@ -19,7 +19,9 @@ from api.routes.briefing import router as briefing_router
 from api.routes.emergency import router as emergency_router
 from api.routes.forecast import router as forecast_router
 from api.routes.infrastructure import router as infrastructure_router
+from api.routes.intelligence import router as intelligence_router
 from api.routes.network import router as network_router
+from api.routes.resilience import router as resilience_router
 
 app = FastAPI(
     title="NeuraX Smart Cities API",
@@ -45,6 +47,8 @@ app.include_router(advisory_router)
 app.include_router(emergency_router)
 app.include_router(infrastructure_router)
 app.include_router(briefing_router)
+app.include_router(resilience_router)
+app.include_router(intelligence_router)
 
 
 @app.get("/api/health", tags=["Health"])

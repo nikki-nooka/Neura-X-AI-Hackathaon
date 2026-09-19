@@ -103,3 +103,62 @@ def test_forecaster_snapshot():
     assert "pred_speed_15m" in preds.columns
     assert "pred_speed_60m" in preds.columns
     assert "pred_congestion_15m" in preds.columns
+
+
+def test_forecast_api_real_state_and_horizons():
+    from fastapi.testclient import TestClient
+    from api.main import app
+    client = TestClient(app)
+    res = client.post("/api/forecast/predict", json={"segment_id": "R0435"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["segment_id"] == "R0435"
+    assert "current_observation" in data
+    obs = data["current_observation"]
+    assert "speed_kmh" in obs and "flow_vph" in obs and "timestamp" in obs
+    assert len(data["horizons"]) == 4
+    for h in data["horizons"]:
+        assert "predicted_speed_kmh" in h
+        assert "predicted_flow_vph" in h
+        assert "predicted_congestion_index" in h
+
+
+def test_validation_scorecard_api():
+    from fastapi.testclient import TestClient
+    from api.main import app
+    client = TestClient(app)
+    res = client.get("/api/forecast/validation-metrics")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["model"] == "HistGradientBoostingRegressor"
+    assert data["evaluated_samples"] == 100000
+    assert data["matched_rows"] == 100000
+    assert len(data["metrics"]) >= 6
+
+
+def test_resilience_analyzer():
+    from src.resilience.resilience_analyzer import ResilienceAnalyzer
+    analyzer = ResilienceAnalyzer()
+    crit = analyzer.calculate_criticality("R0435")
+    assert "modeled_criticality_score" in crit
+    assert crit["modeled_criticality_score"] > 0
+    assert "measurable_factors" in crit
+
+    closure = analyzer.simulate_closure("R0435", duration_min=30)
+    assert "impact_metrics" in closure
+    assert closure["impact_metrics"]["affected_segments_count"] > 0
+    assert closure["impact_metrics"]["affected_od_demand_vph"] > 0
+    assert len(closure["spillback_propagation"]) > 0
+
+
+def test_weekly_intelligence_analyzer():
+    from src.analytics.weekly_analyzer import WeeklyIntelligenceAnalyzer
+    analyzer = WeeklyIntelligenceAnalyzer()
+    rep = analyzer.generate_weekly_report()
+    assert "overall_metrics" in rep
+    assert len(rep["hourly_profile"]) == 15
+    assert len(rep["day_of_week_profile"]) == 7
+    assert len(rep["chronic_bottlenecks"]) > 0
+    assert "deteriorating" in rep["corridor_trends"]
+    assert "improving" in rep["corridor_trends"]
+
